@@ -153,7 +153,7 @@ def load_predictor(artifacts_dir: Path = ARTIFACTS_DIR):
             return keras_predictor, "Modelo híbrido DL + Bayes entrenado"
         except (ValueError, KeyError, OSError) as error:
             return DemoPredictor(), f"Modo demostracion (artefactos incompatibles: {error})"
-    return DemoPredictor(), "Modo demostracion (regenere los artefactos hibridos v2)"
+    return DemoPredictor(), "Modo demostracion (regenere los artefactos híbridos v2)"
 
 
 def predict_match(team_a: str, team_b: str, artifacts_dir: Path = ARTIFACTS_DIR) -> MatchPrediction:
