@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from mundial.blend import load_blend_config, log_linear_pool
+from mundial.blend import log_linear_pool
 from mundial.config import ARTIFACTS_DIR
 from mundial.polymarket import MarketPrice, load_snapshot
 from mundial.schemas import MatchPrediction
@@ -18,20 +18,38 @@ log = logging.getLogger(__name__)
 _SNAPSHOT_NAME = "polymarket_snapshot.json"
 
 
+def _with_base_probs(pred: MatchPrediction) -> MatchPrediction:
+    return MatchPrediction(
+        team_a=pred.team_a,
+        team_b=pred.team_b,
+        prob_a=pred.prob_a,
+        prob_draw=pred.prob_draw,
+        prob_b=pred.prob_b,
+        expected_goals_a=pred.expected_goals_a,
+        expected_goals_b=pred.expected_goals_b,
+        likely_score=pred.likely_score,
+        score_probabilities=pred.score_probabilities,
+        base_probabilities=(pred.prob_a, pred.prob_draw, pred.prob_b),
+    )
+
+
 class MarketBlendedPredictor:
     def __init__(self, base, artifacts_dir: Path = ARTIFACTS_DIR) -> None:
         self.base = base
         self.alpha = 0.0
         self._index: dict[tuple[str, str], MarketPrice] = {}
 
-        snapshot_path = Path(artifacts_dir) / _SNAPSHOT_NAME
         try:
-            markets = load_snapshot(snapshot_path)
-        except (FileNotFoundError, OSError, Exception) as exc:
-            log.warning("polymarket snapshot unavailable: %s", exc)
+            from mundial.blend import load_blend_config
+            cfg = load_blend_config(Path(artifacts_dir))
+            snapshot_path = Path(artifacts_dir) / _SNAPSHOT_NAME
+            markets = load_snapshot(snapshot_path) if snapshot_path.exists() else []
+        except Exception as exc:
+            log.warning("Polymarket init failed, using DL-only: %s", exc)
+            self._index = {}
+            self.alpha = 0.0
             return
 
-        cfg = load_blend_config(artifacts_dir)
         if cfg is None:
             log.warning("market_blend.json missing; DL-only mode")
             return
@@ -58,13 +76,13 @@ class MarketBlendedPredictor:
     def predict_matches(self, pairs, posterior_draw=None) -> list[MatchPrediction]:
         base_preds = self.base.predict_matches(pairs, posterior_draw)
         if self.alpha == 0.0:
-            return base_preds
+            return [_with_base_probs(p) for p in base_preds]
 
         results = []
         for pred, (team_a, team_b) in zip(base_preds, pairs):
             mp = self._index.get((team_a, team_b))
             if mp is None:
-                results.append(pred)
+                results.append(_with_base_probs(pred))
                 continue
 
             # Determine if we looked up in reversed order
@@ -91,7 +109,7 @@ class MarketBlendedPredictor:
                 likely_score=blended_pred.likely_score,
                 score_probabilities=blended_pred.score_probabilities,
                 base_probabilities=(float(dl_probs[0]), float(dl_probs[1]), float(dl_probs[2])),
-                market_probabilities=(float(mp.prob_a), float(mp.prob_draw), float(mp.prob_b)),
+                market_probabilities=(float(mkt_probs[0]), float(mkt_probs[1]), float(mkt_probs[2])),
                 market_weight=float(self.alpha),
                 market_as_of=mp.captured_at,
                 market_slug=mp.slug,
