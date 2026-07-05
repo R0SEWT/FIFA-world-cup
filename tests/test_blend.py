@@ -193,6 +193,8 @@ class TestMarketBlendedPredictor(unittest.TestCase):
         # DL-only: market_weight is 0.0 (set by _with_base_probs)
         self.assertEqual(pred.market_weight, 0.0)
         self.assertAlmostEqual(pred.prob_a + pred.prob_draw + pred.prob_b, 1.0, places=6)
+        assert pred.base_probabilities is not None, "base_probabilities must be set even in fallback"
+        assert abs(sum(pred.base_probabilities) - 1.0) < 1e-9, "base_probabilities must sum to 1"
 
     def test_with_market(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -211,9 +213,9 @@ class TestMarketBlendedPredictor(unittest.TestCase):
         self.assertEqual(pred.market_weight, 0.2)
         self.assertEqual(pred.market_slug, "brazil-vs-argentina")
         self.assertAlmostEqual(pred.prob_a + pred.prob_draw + pred.prob_b, 1.0, places=6)
-        if pred.score_probabilities is not None:
-            matrix = np.asarray(pred.score_probabilities)
-            self.assertAlmostEqual(float(matrix.sum()), 1.0, places=6)
+        assert pred.score_probabilities is not None, "blended prediction must have score_probabilities"
+        matrix = np.asarray(pred.score_probabilities)
+        self.assertAlmostEqual(float(matrix.sum()), 1.0, places=6)
 
     def test_monte_carlo_no_external_calls(self):
         predictor = MarketBlendedPredictor(FakeBase(), artifacts_dir=Path("/nonexistent"))
