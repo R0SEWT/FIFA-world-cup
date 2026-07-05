@@ -53,10 +53,11 @@ def render_probability_cards(prediction) -> None:
             if mp is not None:
                 col2.caption("Polymarket")
                 col2.write(f"{prediction.team_a}: {mp[0]:.1%} | Empate: {mp[1]:.1%} | {prediction.team_b}: {mp[2]:.1%}")
+            alpha_str = f"α={mw:.2f}" if mw is not None else "N/A"
             col3.caption("Combinado")
-            col3.write(f"Peso α={mw:.2f} | Capturado: {getattr(prediction, 'market_as_of', None) or 'N/A'}")
-    elif mw is not None and mw == 0:
-        st.info("Polymarket disponible pero no promovido (usa modelo DL)")
+            col3.write(f"Peso {alpha_str} | Capturado: {getattr(prediction, 'market_as_of', None) or 'N/A'}")
+    elif prediction.base_probabilities is not None and (prediction.market_weight is None or prediction.market_weight == 0.0):
+        st.info("Polymarket disponible pero no promovido para este partido (usa modelo DL)")
 
 
 st.title("⚽ Inteligencia deportiva — Mundial 2026")

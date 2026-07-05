@@ -30,6 +30,7 @@ def _with_base_probs(pred: MatchPrediction) -> MatchPrediction:
         likely_score=pred.likely_score,
         score_probabilities=pred.score_probabilities,
         base_probabilities=(pred.prob_a, pred.prob_draw, pred.prob_b),
+        market_weight=0.0,  # ponytail: DL-only within blended predictor
     )
 
 
