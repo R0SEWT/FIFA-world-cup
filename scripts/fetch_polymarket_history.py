@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from mundial.config import RAW_DIR
-from mundial.polymarket import MarketPrice, PolymarketClient, fetch_upcoming_markets
+from mundial.polymarket import MarketPrice, fetch_upcoming_markets
 
 
 def _now_utc() -> datetime:
@@ -28,6 +28,7 @@ def main() -> None:
     output = Path(args.output)
     manifest_path = Path(args.manifest)
     output.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     now = _now_utc()
     markets = fetch_upcoming_markets()

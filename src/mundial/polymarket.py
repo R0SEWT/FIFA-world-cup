@@ -214,7 +214,8 @@ def fetch_upcoming_markets(client: PolymarketClient | None = None) -> list[Marke
 def load_snapshot(snapshot_path: Path) -> list[MarketPrice]:
     """Loads a previously saved JSON snapshot. Never calls the internet."""
     raw = json.loads(Path(snapshot_path).read_text(encoding="utf-8"))
-    return [MarketPrice(**item) for item in raw]
+    items = raw.get("markets", raw) if isinstance(raw, dict) else raw
+    return [MarketPrice(**item) for item in items]
 
 
 if __name__ == "__main__":

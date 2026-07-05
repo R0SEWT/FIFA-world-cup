@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from mundial.config import ARTIFACTS_DIR
-from mundial.polymarket import MarketPrice, PolymarketClient, fetch_upcoming_markets
+from mundial.polymarket import MarketPrice, fetch_upcoming_markets
 
 
 def _now_utc() -> datetime:
