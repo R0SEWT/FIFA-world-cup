@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/nakato/projects/mundial show --stat 2fc4797)"
+    ]
+  }
+}

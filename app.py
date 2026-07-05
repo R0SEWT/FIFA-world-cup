@@ -57,7 +57,7 @@ def render_probability_cards(prediction) -> None:
                 alpha_str = f"α={mw:.2f}" if mw is not None else "N/A"
                 col3.write(f"Peso {alpha_str} | Capturado: {getattr(prediction, 'market_as_of', None) or 'N/A'}")
         else:
-            st.info("Polymarket disponible pero no promovido para este partido (usa modelo DL)")
+            st.info("Este cruce no usa una cotización Polymarket válida; se sirve el modelo DL.")
 
 
 st.title("⚽ Inteligencia deportiva — Mundial 2026")

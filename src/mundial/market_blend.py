@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -59,10 +60,26 @@ class MarketBlendedPredictor:
             log.info("market blend not promoted or alpha=0; DL-only mode")
             return
 
-        self.alpha = float(cfg["alpha"])
-        for mp in markets:
+        alpha = float(cfg["alpha"])
+        if not 0.0 < alpha <= 0.5:
+            log.warning("invalid promoted market alpha %.3f; DL-only mode", alpha)
+            return
+        self.alpha = alpha
+        now = datetime.now(timezone.utc)
+        for mp in sorted(markets, key=lambda item: item.event_start):
+            try:
+                kickoff = datetime.fromisoformat(mp.event_start.replace("Z", "+00:00"))
+                captured = datetime.fromisoformat(mp.captured_at.replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            if captured >= kickoff or kickoff <= now:
+                continue
             self._index[(mp.team_a, mp.team_b)] = mp
             self._index[(mp.team_b, mp.team_a)] = mp
+
+    @property
+    def market_count(self) -> int:
+        return len(self._index) // 2
 
     @property
     def posterior_draws(self) -> int:

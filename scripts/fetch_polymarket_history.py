@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from mundial.config import RAW_DIR
-from mundial.polymarket import MarketPrice, fetch_upcoming_markets
+from mundial.polymarket import MarketPrice, fetch_historical_markets
 
 
 def _now_utc() -> datetime:
@@ -31,12 +31,7 @@ def main() -> None:
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     now = _now_utc()
-    markets = fetch_upcoming_markets()
-    # ponytail: fetch_upcoming_markets filters future markets; keep only past event_starts
-    past: list[MarketPrice] = [
-        m for m in markets
-        if datetime.fromisoformat(m.event_start.replace("Z", "+00:00")) < now
-    ]
+    past: list[MarketPrice] = fetch_historical_markets()
 
     cols = ["team_a", "team_b", "prob_a", "prob_draw", "prob_b", "total_liquidity", "spread", "event_start", "captured_at", "slug", "condition_id"]
     df = pd.DataFrame([dataclasses.asdict(m) for m in past], columns=cols) if past else pd.DataFrame(columns=cols)
@@ -50,6 +45,7 @@ def main() -> None:
             "min_liquidity": 10000.0,
             "max_spread": 0.05,
             "min_minutes_before_kickoff": 60,
+            "historical_quality_proxy": "aggregate_volume; pre-match spread unavailable after book clearing",
         },
         "endpoints": [
             "https://gamma-api.polymarket.com/events",

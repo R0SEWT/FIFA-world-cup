@@ -87,8 +87,8 @@ _SNAPSHOT_MARKET = {
     "prob_b": 0.27,
     "total_liquidity": 125_000.0,
     "spread": 0.02,
-    "event_start": "2026-06-15T18:00:00Z",
-    "captured_at": "2026-06-15T16:30:00Z",
+    "event_start": "2027-06-15T18:00:00Z",
+    "captured_at": "2027-06-15T16:30:00Z",
     "slug": "brazil-vs-argentina",
     "condition_id": "0xabc",
 }

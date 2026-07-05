@@ -154,6 +154,7 @@ La calibración candidata empeoró log-loss (1.0088 frente a 1.0048), Brier (0.5
 5. **Plantillas.** FC 24 sigue siendo proxy; no se usan convocatorias oficiales 2026.
 6. **Rendimiento.** La incertidumbre posterior aumenta el tiempo del simulador. Se verificó funcionalidad con 2,000 corridas, pero falta un benchmark y posible vectorización antes de usar 10,000/20,000 de forma interactiva.
 7. **Cobertura de selecciones.** Aún conviene añadir una prueba de integración que exija ranking, plantilla y secuencia propios para las 48 selecciones.
+8. **Promoción de Polymarket.** El cliente y los snapshots funcionan contra Gamma/CLOB reales, pero el peso permanece en cero hasta exportar al menos 30 predicciones OOF temporales para calibración y 20 para evaluación. El gate bloquea deliberadamente el predictor de producción sobre partidos que pudo haber visto.
 
 ## 8. Próximos pasos exactos
 
@@ -163,6 +164,7 @@ La calibración candidata empeoró log-loss (1.0088 frente a 1.0048), Brier (0.5
 4. Confirmar el snapshot FIFA más reciente y la cobertura propia de ranking, plantilla y secuencia para las 48 selecciones.
 5. Ejecutar un benchmark de 10,000/20,000 simulaciones y vectorizar si la latencia interactiva no es aceptable.
 6. Grabar el video y preparar la defensa: leakage temporal, BPTT, log-loss/Brier, temperature scaling, Dixon–Coles y diferencia entre incertidumbre posterior y Monte Carlo.
+7. Exportar probabilidades OOF expansivas para los partidos con mercado, ejecutar `scripts/evaluate_market_blend.py` y promover Polymarket solo si mejora log-loss y Brier.
 
 ## 9. Comprobaciones rápidas
 

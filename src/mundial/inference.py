@@ -143,8 +143,10 @@ def load_predictor(artifacts_dir: Path = ARTIFACTS_DIR):
                     predictor = MarketBlendedPredictor(keras_predictor, artifacts_dir)
                     alpha = blend_config.get("alpha", 0.0)
                     promoted = blend_config.get("promoted", False)
-                    if promoted and alpha > 0:
+                    if promoted and alpha > 0 and predictor.market_count > 0:
                         mode = f"Modelo híbrido DL + Bayes + Polymarket (α={alpha:.2f})"
+                    elif promoted and alpha > 0:
+                        mode = "Modelo híbrido DL + Bayes (sin mercados Polymarket vigentes)"
                     else:
                         mode = "Modelo híbrido DL + Bayes (Polymarket no promovido)"
                     return predictor, mode

@@ -390,8 +390,9 @@ class TournamentSimulator:
         market_crossings_used = 0
         fallback_count = 0
         for (ta, tb, _), pred in self._prediction_cache.items():
-            if (ta, tb) not in seen_pairs:
-                seen_pairs.add((ta, tb))
+            pair = tuple(sorted((ta, tb)))
+            if pair not in seen_pairs:
+                seen_pairs.add(pair)
                 mw = getattr(pred, "market_weight", None)
                 if mw is not None and mw > 0:
                     market_crossings_used += 1

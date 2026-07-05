@@ -139,12 +139,38 @@ def _join_data(poly: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
+def _join_oof(joined: pd.DataFrame, oof: pd.DataFrame) -> pd.DataFrame:
+    """Adjunta probabilidades OOF respetando orientación y fecha del encuentro."""
+    records = []
+    oof = oof.copy()
+    oof["date"] = pd.to_datetime(oof["date"], utc=True).dt.normalize()
+    for row in joined.itertuples(index=False):
+        event_date = pd.Timestamp(row.event_start).tz_convert("UTC").normalize()
+        candidates = oof[(oof["date"] - event_date).abs() <= pd.Timedelta(days=1)]
+        match = candidates[(candidates["home_team"] == row.team_a) & (candidates["away_team"] == row.team_b)]
+        flipped = False
+        if match.empty:
+            match = candidates[(candidates["home_team"] == row.team_b) & (candidates["away_team"] == row.team_a)]
+            flipped = not match.empty
+        if match.empty:
+            continue
+        source = match.iloc[0]
+        payload = row._asdict()
+        probs = [source["oof_prob_a"], source["oof_prob_draw"], source["oof_prob_b"]]
+        if flipped:
+            probs = [probs[2], probs[1], probs[0]]
+        payload.update(dict(zip(["oof_prob_a", "oof_prob_draw", "oof_prob_b"], probs, strict=True)))
+        records.append(payload)
+    return pd.DataFrame(records)
+
+
 def run_blend_evaluation(
     predictor,
     polymarket_path: Path,
     matches_path: Path,
     artifacts_dir: Path = ARTIFACTS_DIR,
     seed: int = 42,
+    oof_path: Path | None = None,
 ) -> dict:
     """Runs full evaluation and writes market_blend.json. Returns the result dict."""
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -180,14 +206,24 @@ def run_blend_evaluation(
 
     joined = joined.sort_values("event_start").reset_index(drop=True)
 
-    pairs = list(zip(joined["team_a"], joined["team_b"]))
-    try:
-        preds = predictor.predict_matches(pairs)
-    except (OSError, KeyError, ValueError) as exc:
-        log.warning("prediccion fallida: %s", exc)
-        return _write_insufficient("muestra insuficiente")
-
-    dl_probs = np.array([[p.prob_a, p.prob_draw, p.prob_b] for p in preds])
+    # Never score historical rows with the production predictor: it may have
+    # trained on their outcomes. The matched dataset must carry probabilities
+    # produced by expanding-window models whose cutoff precedes each match.
+    oof_columns = ["oof_prob_a", "oof_prob_draw", "oof_prob_b"]
+    oof_path = Path(oof_path) if oof_path is not None else Path(artifacts_dir) / "market_oof.parquet"
+    if not oof_path.exists():
+        log.warning("faltan predicciones OOF temporales; se bloquea evaluación con fuga")
+        return _write_insufficient("faltan predicciones OOF temporales sin fuga")
+    oof = pd.read_parquet(oof_path)
+    required_oof = ["home_team", "away_team", "date", "training_cutoff", *oof_columns]
+    if not all(column in oof.columns for column in required_oof):
+        return _write_insufficient("artefacto OOF inválido")
+    if (pd.to_datetime(oof["training_cutoff"]) >= pd.to_datetime(oof["date"])).any():
+        return _write_insufficient("artefacto OOF contiene fuga temporal")
+    joined = _join_oof(joined, oof)
+    if joined.empty or joined[oof_columns].isna().any().any():
+        return _write_insufficient("predicciones OOF no emparejadas")
+    dl_probs = joined[oof_columns].to_numpy(dtype=float)
     market_probs = joined[["m_a", "m_draw", "m_b"]].to_numpy(dtype=float)
     outcomes = joined["outcome"].to_numpy(dtype=int)
 

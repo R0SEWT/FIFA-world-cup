@@ -48,6 +48,17 @@ streamlit run app.py
 
 Sin artefactos v2 entrenados, la aplicación arranca en un modo demostración Elo claramente identificado. Después de entrenar, carga el backbone Keras, calibración posterior, Dixon–Coles y manifiesto versionado.
 
+### Señal opcional de Polymarket
+
+```bash
+python scripts/fetch_polymarket_history.py
+python scripts/generate_polymarket_snapshot.py
+python scripts/generate_market_oof.py
+python scripts/evaluate_market_blend.py
+```
+
+Gamma representa el 1-X-2 como tres contratos binarios; el cliente toma el token `Yes` de victoria A, empate y victoria B, los normaliza y guarda snapshots locales. La combinación log-lineal solo se activa cuando `market_blend.json` fue promovido con probabilidades OOF generadas antes de cada partido. Si faltan esas columnas o la mezcla no mejora log-loss y Brier, el dashboard conserva DL + Bayes y lo indica explícitamente. Nunca se consulta la red durante Monte Carlo.
+
 ## Notebook y pruebas
 
 El notebook editable es `notebooks/Proyecto_Mundial_2026.ipynb` y la entrega con resultados reales está en `notebooks/Proyecto_Mundial_2026_Ejecutado.ipynb`. En Colab use `requirements-colab.txt`; TensorFlow ya viene incluido en el runtime con GPU.
@@ -67,6 +78,7 @@ jupyter lab
 - Cuando una selección no tiene plantilla completa se usa la mediana de la edición y se activa `players_imputed`.
 - El desempate implementa puntos, diferencia de gol, goles y enfrentamiento directo. Fair play no está disponible y se reemplaza por un sorteo reproducible.
 - La ronda de 32 conserva los cruces y grupos de terceros permitidos por el calendario FIFA 2026.
+- Polymarket utiliza exclusivamente mercados de 90 minutos; cruces sin cotización válida vuelven automáticamente al modelo base.
 
 ## Guion sugerido para el video de dos minutos
 

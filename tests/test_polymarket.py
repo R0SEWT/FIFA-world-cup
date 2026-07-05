@@ -1,300 +1,160 @@
-"""Tests for mundial.polymarket — normalize, alias resolution, filtering, snapshot load, API mock."""
+"""Pruebas del cliente Polymarket contra el esquema real de Gamma."""
 
 from __future__ import annotations
 
 import json
-import tempfile
-import unittest
 from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
+import pytest
 
 from mundial.polymarket import (
-    MarketPrice,
     PolymarketClient,
     _extract_teams,
+    fetch_historical_markets,
     fetch_upcoming_markets,
     load_snapshot,
     normalize_prices,
 )
-from mundial.config import load_aliases
-
-# ---------------------------------------------------------------------------
-# Shared fixtures (plain dicts, no pytest fixtures)
-# ---------------------------------------------------------------------------
-
-_MARKET = {
-    "active": True,
-    "closed": False,
-    "category": "moneyline",
-    "groupItemTitle": "Brazil vs Argentina",
-    "conditionId": "0xabc",
-    "outcomes": ["Brazil", "Draw", "Argentina"],
-    "tokens": [
-        {"token_id": "0xabc1"},
-        {"token_id": "0xabc2"},
-        {"token_id": "0xabc3"},
-    ],
-    "volumeNum": 50_000.0,
-    "slug": "brazil-vs-argentina-ml",
-}
-
-_EVENT_START_FAR = datetime(2027, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-_NOW_EARLY = datetime(2026, 1, 1, 10, 0, 0, tzinfo=timezone.utc)
-_ALIASES: dict[str, str] = {}
 
 
-# ---------------------------------------------------------------------------
-# normalize_prices
-# ---------------------------------------------------------------------------
+def _binary_market(label: str, yes: float, token: str, *, spread: float = 0.01, liquidity: float = 20_000):
+    question = "Will Brazil vs. Norway end in a draw?" if label.startswith("Draw") else f"Will {label} win?"
+    return {
+        "active": True,
+        "closed": False,
+        "question": question,
+        "groupItemTitle": label,
+        "sportsMarketType": "moneyline",
+        "description": "This market refers only to the outcome within the first 90 minutes of regular play.",
+        "outcomes": json.dumps(["Yes", "No"]),
+        "outcomePrices": json.dumps([str(yes), str(1 - yes)]),
+        "clobTokenIds": json.dumps([token, f"{token}-no"]),
+        "bestBid": yes - 0.005,
+        "bestAsk": yes + 0.005,
+        "spread": spread,
+        "liquidityNum": liquidity,
+        "volumeNum": liquidity,
+        "conditionId": f"condition-{token}",
+        "gameStartTime": "2027-01-01T12:00:00Z",
+    }
 
 
-class TestNormalizePrices(unittest.TestCase):
-    def test_normalize_prices_sums_to_one(self):
-        r = normalize_prices([0.4, 0.3, 0.2])
-        self.assertAlmostEqual(sum(r), 1.0, places=9)
-
-        r2 = normalize_prices([0.5, 0.3, 0.2])
-        for a, b in zip(r2, [0.5, 0.3, 0.2]):
-            self.assertAlmostEqual(a, b, places=9)
-
-        r3 = normalize_prices([1.0, 1.0, 1.0])
-        for v in r3:
-            self.assertAlmostEqual(v, 1 / 3, places=9)
-
-    def test_normalize_prices_clipping(self):
-        with self.assertRaises(ValueError):
-            normalize_prices([0.0, 0.5, 0.5])
-
-
-# ---------------------------------------------------------------------------
-# Spread is computed on normalised prices (not raw)
-# ---------------------------------------------------------------------------
+def _event(*, closed: bool = False):
+    markets = [
+        _binary_market("Brazil", 0.535, "bra"),
+        _binary_market("Draw (Brazil vs. Norway)", 0.265, "draw"),
+        _binary_market("Norway", 0.205, "nor"),
+    ]
+    for market in markets:
+        market["closed"] = closed
+        market["active"] = not closed
+    return {
+        "id": "654615",
+        "slug": "fifwc-bra-nor-2026-07-05",
+        "title": "Brazil vs. Norway",
+        "startDate": "2026-07-01T10:03:40Z",  # publicación, no kickoff
+        "startTime": "2027-01-01T12:00:00Z",
+        "markets": markets,
+    }
 
 
-class TestSpreadOnNormalized(unittest.TestCase):
-    def test_spread_computed_on_normalized(self):
-        # raw [0.6, 0.5, 0.5] → sum 1.6 → normalised [0.375, 0.3125, 0.3125]
-        # spread = 0.375 − 0.3125 = 0.0625 > 0.05 → rejected
-        client = PolymarketClient()
-        with patch.object(client, "_last_price_before", side_effect=[0.6, 0.5, 0.5]):
-            result = client._build_market_price(_MARKET, _EVENT_START_FAR, _ALIASES, _NOW_EARLY)
-        self.assertIsNone(result)
-
-    def test_spread_tight_accepted(self):
-        # raw [0.34, 0.33, 0.33] → spread ≈ 0.01 ≤ 0.05 → accepted
-        client = PolymarketClient()
-        with patch.object(client, "_last_price_before", side_effect=[0.34, 0.33, 0.33]):
-            result = client._build_market_price(_MARKET, _EVENT_START_FAR, _ALIASES, _NOW_EARLY)
-        self.assertIsNotNone(result)
+def test_normalize_prices():
+    assert normalize_prices([0.535, 0.265, 0.205]) == pytest.approx([0.5323383, 0.2636816, 0.2039801])
+    with pytest.raises(ValueError):
+        normalize_prices([0.5, 0.5])
+    with pytest.raises(ValueError):
+        normalize_prices([0.5, 0.5, 0.0])
 
 
-# ---------------------------------------------------------------------------
-# Alias resolution and team name stripping
-# ---------------------------------------------------------------------------
+def test_extract_teams_and_aliases():
+    assert _extract_teams("Brazil vs. Norway", {}) == ("Brazil", "Norway")
+    assert _extract_teams("IR Iran vs USA", {"IR Iran": "Iran", "USA": "United States"}) == (
+        "Iran", "United States"
+    )
 
 
-class TestAliasResolution(unittest.TestCase):
-    def test_alias_resolution(self):
-        aliases = load_aliases()
-        teams = _extract_teams("IR Iran vs Saudi Arabia", aliases)
-        self.assertIsNotNone(teams)
-        self.assertEqual(teams[0], "Iran")
-
-        teams2 = _extract_teams("Cape Verde vs Senegal", aliases)
-        self.assertIsNotNone(teams2)
-        self.assertEqual(teams2[0], "Cabo Verde")
-
-    def test_team_name_trailing_strip(self):
-        teams = _extract_teams("Brazil vs Argentina - Moneyline", {})
-        self.assertIsNotNone(teams)
-        self.assertEqual(teams[1], "Argentina")
+def test_real_gamma_shape_builds_one_1x2_quote(monkeypatch):
+    client = PolymarketClient()
+    monkeypatch.setattr("mundial.polymarket._now_utc", lambda: datetime(2026, 12, 31, tzinfo=timezone.utc))
+    monkeypatch.setattr(client, "_fetch_events", lambda **_: [_event()])
+    results = client.fetch_upcoming()
+    assert len(results) == 1
+    quote = results[0]
+    assert (quote.team_a, quote.team_b) == ("Brazil", "Norway")
+    assert quote.event_start == "2027-01-01T12:00:00Z"
+    assert quote.prob_a + quote.prob_draw + quote.prob_b == pytest.approx(1.0)
+    assert quote.spread == pytest.approx(0.01)
+    assert quote.total_liquidity == pytest.approx(60_000)
 
 
-# ---------------------------------------------------------------------------
-# Rejection: high spread, low liquidity, market already started
-# ---------------------------------------------------------------------------
+def test_uses_actual_bid_ask_spread_not_probability_range(monkeypatch):
+    client = PolymarketClient(max_spread=0.05)
+    monkeypatch.setattr("mundial.polymarket._now_utc", lambda: datetime(2026, 12, 31, tzinfo=timezone.utc))
+    monkeypatch.setattr(client, "_fetch_events", lambda **_: [_event()])
+    quote = client.fetch_upcoming()[0]
+    assert quote.prob_a - quote.prob_b > 0.05
+    assert quote.spread <= 0.05
 
 
-class TestRejection(unittest.TestCase):
-    def _client_with(self, prices: list[float]) -> PolymarketClient:
-        client = PolymarketClient()
-        client._last_price_before = MagicMock(side_effect=prices)
-        return client
+def test_rejects_wide_spread_and_low_liquidity(monkeypatch):
+    client = PolymarketClient()
+    monkeypatch.setattr("mundial.polymarket._now_utc", lambda: datetime(2026, 12, 31, tzinfo=timezone.utc))
+    wide = _event()
+    wide["markets"][1]["spread"] = 0.06
+    monkeypatch.setattr(client, "_fetch_events", lambda **_: [wide])
+    assert client.fetch_upcoming() == []
 
-    def test_rejection_high_spread(self):
-        # spread = 0.9 − 0.05 = 0.85 > 0.05 → rejected
-        client = self._client_with([0.9, 0.05, 0.05])
-        result = client._build_market_price(_MARKET, _EVENT_START_FAR, _ALIASES, _NOW_EARLY)
-        self.assertIsNone(result)
-
-    def test_rejection_low_spread_accepted(self):
-        client = self._client_with([0.34, 0.33, 0.33])
-        result = client._build_market_price(_MARKET, _EVENT_START_FAR, _ALIASES, _NOW_EARLY)
-        self.assertIsNotNone(result)
-
-    def test_rejection_low_liquidity(self):
-        low_liq = {**_MARKET, "volumeNum": 5_000.0}
-        client = self._client_with([0.34, 0.33, 0.33])
-        result = client._build_market_price(low_liq, _EVENT_START_FAR, _ALIASES, _NOW_EARLY)
-        self.assertIsNone(result)
-
-    def test_rejection_high_liquidity_accepted(self):
-        client = self._client_with([0.34, 0.33, 0.33])
-        result = client._build_market_price(_MARKET, _EVENT_START_FAR, _ALIASES, _NOW_EARLY)
-        self.assertIsNotNone(result)
-
-    def test_rejection_started_market(self):
-        # now is 30 min before kickoff — cutoff is 60 min before → now ≥ cutoff → rejected
-        event_start = datetime(2026, 8, 1, 12, 0, 0, tzinfo=timezone.utc)
-        now_late = datetime(2026, 8, 1, 11, 30, 0, tzinfo=timezone.utc)
-        client = PolymarketClient()
-        result = client._build_market_price(_MARKET, event_start, _ALIASES, now_late)
-        self.assertIsNone(result)
-
-    def test_upcoming_market_not_rejected(self):
-        # now is 2 hours before kickoff → now < cutoff → not rejected by time check
-        event_start = datetime(2026, 8, 1, 12, 0, 0, tzinfo=timezone.utc)
-        now_early = datetime(2026, 8, 1, 10, 0, 0, tzinfo=timezone.utc)
-        client = self._client_with([0.34, 0.33, 0.33])
-        result = client._build_market_price(_MARKET, event_start, _ALIASES, now_early)
-        self.assertIsNotNone(result)
+    low = _event()
+    for market in low["markets"]:
+        market["liquidityNum"] = 1_000
+    monkeypatch.setattr(client, "_fetch_events", lambda **_: [low])
+    assert client.fetch_upcoming() == []
 
 
-# ---------------------------------------------------------------------------
-# load_snapshot — pure file read, no network
-# ---------------------------------------------------------------------------
+def test_historical_uses_yes_tokens_at_one_hour_cutoff(monkeypatch):
+    client = PolymarketClient()
+    event = _event(closed=True)
+    event["startTime"] = "2026-01-02T12:00:00Z"
+    for market in event["markets"]:
+        market["gameStartTime"] = event["startTime"]
+    monkeypatch.setattr("mundial.polymarket._now_utc", lambda: datetime(2026, 1, 3, tzinfo=timezone.utc))
+    monkeypatch.setattr(client, "_fetch_events", lambda **kwargs: [event] if kwargs["closed"] else [])
+    seen = []
+
+    def price(token, cutoff):
+        seen.append((token, cutoff))
+        return {"bra": 0.5, "draw": 0.3, "nor": 0.2}[token]
+
+    monkeypatch.setattr(client, "_last_price_before", price)
+    quote = client.fetch_historical()[0]
+    assert [token for token, _ in seen] == ["bra", "draw", "nor"]
+    assert all(cutoff.isoformat() == "2026-01-02T11:00:00+00:00" for _, cutoff in seen)
+    assert quote.captured_at == "2026-01-02T11:00:00Z"
 
 
-class TestLoadSnapshot(unittest.TestCase):
-    def test_load_snapshot(self):
-        snapshot_data = [
-            {
-                "team_a": "Brazil",
-                "team_b": "Argentina",
-                "prob_a": 0.45,
-                "prob_draw": 0.28,
-                "prob_b": 0.27,
-                "total_liquidity": 125_000.0,
-                "spread": 0.02,
-                "event_start": "2026-06-15T18:00:00Z",
-                "captured_at": "2026-06-15T16:30:00Z",
-                "slug": "brazil-vs-argentina",
-                "condition_id": "0xabc",
-            }
-        ]
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "snapshot.json"
-            path.write_text(json.dumps(snapshot_data), encoding="utf-8")
-            result = load_snapshot(path)
-
-        self.assertEqual(len(result), 1)
-        self.assertIsInstance(result[0], MarketPrice)
-        self.assertEqual(result[0].team_a, "Brazil")
-        self.assertEqual(result[0].team_b, "Argentina")
+def test_public_helpers_delegate_to_correct_mode():
+    client = PolymarketClient()
+    with patch.object(client, "fetch_upcoming", return_value=[]) as upcoming:
+        assert fetch_upcoming_markets(client) == []
+        upcoming.assert_called_once()
+    with patch.object(client, "fetch_historical", return_value=[]) as historical:
+        assert fetch_historical_markets(client) == []
+        historical.assert_called_once()
 
 
-# ---------------------------------------------------------------------------
-# Integration: API client with mocked urllib transport
-# ---------------------------------------------------------------------------
-
-
-class TestApiClientWithMockTransport(unittest.TestCase):
-    @staticmethod
-    def _make_response(data: object):
-        body = json.dumps(data).encode()
-
-        class _FakeResp:
-            def read(self):
-                return body
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *args):
-                pass
-
-        return _FakeResp()
-
-    def _fake_urlopen(self, url, timeout=30):
-        url_str = str(url)
-        if "gamma-api" in url_str:
-            return self._make_response(self._events)
-        # CLOB price history — route by token_id substring
-        if "tok_g1" in url_str:
-            return self._make_response({"history": [{"t": 1_000_000, "p": 0.34}]})
-        if "tok_g" in url_str:
-            return self._make_response({"history": [{"t": 1_000_000, "p": 0.33}]})
-        if "tok_w1" in url_str:
-            return self._make_response({"history": [{"t": 1_000_000, "p": 0.90}]})
-        if "tok_w" in url_str:
-            return self._make_response({"history": [{"t": 1_000_000, "p": 0.05}]})
-        return self._make_response([])
-
-    def setUp(self):
-        good_market = {
-            "active": True,
-            "closed": False,
-            "category": "moneyline",
-            "groupItemTitle": "Brazil vs Argentina",
-            "conditionId": "0xgood",
-            "outcomes": ["Brazil", "Draw", "Argentina"],
-            "tokens": [
-                {"token_id": "tok_g1"},
-                {"token_id": "tok_g2"},
-                {"token_id": "tok_g3"},
-            ],
-            "volumeNum": 50_000.0,
-            "slug": "brazil-vs-argentina-ml",
-        }
-        malformed_market = {
-            # "active" key missing → skipped gracefully
-            "category": "moneyline",
-            "groupItemTitle": "France vs Italy",
-            "conditionId": "0xbad",
-            "outcomes": ["France", "Draw", "Italy"],
-        }
-        wide_spread_market = {
-            "active": True,
-            "closed": False,
-            "category": "moneyline",
-            "groupItemTitle": "Spain vs Germany",
-            "conditionId": "0xwide",
-            "outcomes": ["Spain", "Draw", "Germany"],
-            "tokens": [
-                {"token_id": "tok_w1"},
-                {"token_id": "tok_w2"},
-                {"token_id": "tok_w3"},
-            ],
-            "volumeNum": 50_000.0,
-            "slug": "spain-vs-germany-ml",
-        }
-        self._events = [
-            {
-                "slug": "world-cup-soccer-2027",
-                "tags": [{"slug": "soccer"}, {"slug": "world-cup"}],
-                "startDate": "2027-01-01T12:00:00Z",
-                "markets": [good_market, malformed_market, wide_spread_market],
-            }
-        ]
-
-    def test_api_client_with_mock_transport(self):
-        with patch("urllib.request.urlopen", side_effect=self._fake_urlopen):
-            results = fetch_upcoming_markets()
-
-        # Only the good market survives (malformed skipped, wide spread filtered)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].team_a, "Brazil")
-        self.assertEqual(results[0].team_b, "Argentina")
-        self.assertGreaterEqual(results[0].total_liquidity, 10_000.0)
-        self.assertLessEqual(results[0].spread, 0.05)
-
-    def test_no_results_on_empty_events(self):
-        self._events = []
-        with patch("urllib.request.urlopen", side_effect=self._fake_urlopen):
-            results = fetch_upcoming_markets()
-        self.assertEqual(results, [])
-
-
-if __name__ == "__main__":
-    unittest.main()
+def test_snapshot_supports_envelope(tmp_path: Path):
+    payload = {
+        "generated_at": "2026-01-01T00:00:00Z",
+        "markets": [{
+            "team_a": "Brazil", "team_b": "Norway", "prob_a": 0.5,
+            "prob_draw": 0.3, "prob_b": 0.2, "total_liquidity": 20_000,
+            "spread": 0.01, "event_start": "2026-01-02T12:00:00Z",
+            "captured_at": "2026-01-02T11:00:00Z", "slug": "fifwc-bra-nor",
+            "condition_id": "a,d,b",
+        }],
+    }
+    path = tmp_path / "snapshot.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert load_snapshot(path)[0].slug == "fifwc-bra-nor"
