@@ -385,6 +385,18 @@ class TournamentSimulator:
                 max(0.0, float(center - half_width)),
                 min(1.0, float(center + half_width)),
             )
+        # ponytail: count unique pairs; market_weight is snapshot-based, same across posterior draws
+        seen_pairs: set[tuple[str, str]] = set()
+        market_crossings_used = 0
+        fallback_count = 0
+        for (ta, tb, _), pred in self._prediction_cache.items():
+            if (ta, tb) not in seen_pairs:
+                seen_pairs.add((ta, tb))
+                mw = getattr(pred, "market_weight", None)
+                if mw is not None and mw > 0:
+                    market_crossings_used += 1
+                else:
+                    fallback_count += 1
         return TournamentSimulation(
             group_tables=group_tables,
             bracket=representative,
@@ -394,6 +406,7 @@ class TournamentSimulator:
             metadata={
                 "group_matches_per_run": 72, "knockout_matches_per_run": 32,
                 "posterior_draws": posterior_draws, "champion_confidence_intervals_95": champion_intervals,
+                "market_crossings_used": market_crossings_used, "fallback_count": fallback_count,
             },
         )
 

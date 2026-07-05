@@ -42,6 +42,21 @@ def render_probability_cards(prediction) -> None:
     columns[1].metric("Empate", f"{prediction.prob_draw:.1%}")
     columns[2].metric(f"Gana {prediction.team_b}", f"{prediction.prob_b:.1%}")
     st.subheader(f"Marcador mas probable: {prediction.likely_score[0]} – {prediction.likely_score[1]}")
+    bp = getattr(prediction, "base_probabilities", None)
+    mp = getattr(prediction, "market_probabilities", None)
+    mw = getattr(prediction, "market_weight", None)
+    if bp is not None:
+        with st.expander("Detalle: modelo vs mercado"):
+            col1, col2, col3 = st.columns(3)
+            col1.caption("Modelo DL")
+            col1.write(f"{prediction.team_a}: {bp[0]:.1%} | Empate: {bp[1]:.1%} | {prediction.team_b}: {bp[2]:.1%}")
+            if mp is not None:
+                col2.caption("Polymarket")
+                col2.write(f"{prediction.team_a}: {mp[0]:.1%} | Empate: {mp[1]:.1%} | {prediction.team_b}: {mp[2]:.1%}")
+            col3.caption("Combinado")
+            col3.write(f"Peso α={mw:.2f} | Capturado: {getattr(prediction, 'market_as_of', None) or 'N/A'}")
+    elif mw is not None and mw == 0:
+        st.info("Polymarket disponible pero no promovido (usa modelo DL)")
 
 
 st.title("⚽ Inteligencia deportiva — Mundial 2026")
@@ -150,6 +165,10 @@ with champions_tab:
     if not simulation:
         st.warning("Corrija la configuracion de grupos para calcular campeones.")
     else:
+        market_used = simulation.metadata.get("market_crossings_used", 0)
+        fallback = simulation.metadata.get("fallback_count", 0)
+        if market_used + fallback > 0:
+            st.caption(f"Polymarket: {market_used} cruces con mercado, {fallback} sin mercado (DL puro)")
         top = list(simulation.champion_probabilities.items())[:10]
         intervals = simulation.metadata.get("champion_confidence_intervals_95", {})
         chart = pd.DataFrame([

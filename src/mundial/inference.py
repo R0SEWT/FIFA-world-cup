@@ -133,7 +133,24 @@ def load_predictor(artifacts_dir: Path = ARTIFACTS_DIR):
     )
     if all((artifacts_dir / name).exists() for name in required):
         try:
-            return KerasPredictor(artifacts_dir), "Modelo hibrido DL + Bayes entrenado"
+            keras_predictor = KerasPredictor(artifacts_dir)
+            try:
+                from mundial.market_blend import MarketBlendedPredictor
+                from mundial.blend import load_blend_config
+                blend_config = load_blend_config(artifacts_dir)
+                snapshot_path = artifacts_dir / "polymarket_snapshot.json"
+                if blend_config is not None and snapshot_path.exists():
+                    predictor = MarketBlendedPredictor(keras_predictor, artifacts_dir)
+                    alpha = blend_config.get("alpha", 0.0)
+                    promoted = blend_config.get("promoted", False)
+                    if promoted and alpha > 0:
+                        mode = f"Modelo hibrido DL + Bayes + Polymarket (α={alpha:.2f})"
+                    else:
+                        mode = "Modelo hibrido DL + Bayes (Polymarket no promovido)"
+                    return predictor, mode
+            except Exception:
+                pass  # polymarket optional
+            return keras_predictor, "Modelo hibrido DL + Bayes entrenado"
         except (ValueError, KeyError, OSError) as error:
             return DemoPredictor(), f"Modo demostracion (artefactos incompatibles: {error})"
     return DemoPredictor(), "Modo demostracion (regenere los artefactos hibridos v2)"
