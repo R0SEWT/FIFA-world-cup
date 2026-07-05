@@ -144,13 +144,13 @@ def load_predictor(artifacts_dir: Path = ARTIFACTS_DIR):
                     alpha = blend_config.get("alpha", 0.0)
                     promoted = blend_config.get("promoted", False)
                     if promoted and alpha > 0:
-                        mode = f"Modelo hibrido DL + Bayes + Polymarket (α={alpha:.2f})"
+                        mode = f"Modelo híbrido DL + Bayes + Polymarket (α={alpha:.2f})"
                     else:
-                        mode = "Modelo hibrido DL + Bayes (Polymarket no promovido)"
+                        mode = "Modelo híbrido DL + Bayes (Polymarket no promovido)"
                     return predictor, mode
             except Exception:
                 pass  # polymarket optional
-            return keras_predictor, "Modelo hibrido DL + Bayes entrenado"
+            return keras_predictor, "Modelo híbrido DL + Bayes entrenado"
         except (ValueError, KeyError, OSError) as error:
             return DemoPredictor(), f"Modo demostracion (artefactos incompatibles: {error})"
     return DemoPredictor(), "Modo demostracion (regenere los artefactos hibridos v2)"
