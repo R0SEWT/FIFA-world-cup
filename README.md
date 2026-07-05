@@ -59,6 +59,32 @@ python scripts/evaluate_market_blend.py
 
 Gamma representa el 1-X-2 como tres contratos binarios; el cliente toma el token `Yes` de victoria A, empate y victoria B, los normaliza y guarda snapshots locales. La combinación log-lineal solo se activa cuando `market_blend.json` fue promovido con probabilidades OOF generadas antes de cada partido. Si faltan esas columnas o la mezcla no mejora log-loss y Brier, el dashboard conserva DL + Bayes y lo indica explícitamente. Nunca se consulta la red durante Monte Carlo.
 
+### Estado vivo del torneo
+
+La actualización tiene dos pasos y nunca reemplaza producción directamente:
+
+```bash
+python scripts/fetch_tournament_state.py --url "$MUNDIAL_FIFA_SOURCE_URL"
+python scripts/approve_tournament_state.py
+```
+
+El primero escribe `artifacts/tournament_state.candidate.json` y valida los 104 partidos, dependencias, ganadores y monotonicidad contra el snapshot aprobado. El segundo crea un backup, promueve atómicamente `tournament_state.json` y refresca Polymarket conservando solo cruces pendientes de 90 minutos. Si FIFA falla o cambia el esquema, producción no se toca y el dashboard muestra que sirve el snapshot anterior.
+
+La simulación aplica resultados reales a los grupos, bloquea cruces oficiales y solo sortea partidos pendientes. Una misma semilla, estado y snapshot de mercado producen el mismo resultado; los eliminados permanecen en 0%.
+
+Al cerrar una fase, el dataset puede reconstruirse con los resultados aprobados (las features se calculan con `shift(1)`, antes del partido):
+
+```bash
+python scripts/build_dataset.py --tournament-state artifacts/tournament_state.json --as-of-date 2026-06-27
+python scripts/train_models.py --phase groups --terminal-fold-start 2026-06-11 \
+  --terminal-fold-end 2026-06-27 --artifacts-dir artifacts/candidate-groups
+python scripts/gate_phase_model.py --phase groups --data-cutoff 2026-06-27 \
+  --candidate-version wc26-groups-v1 --candidate-metrics candidate_metrics.json \
+  --incumbent-metrics incumbent_metrics.json
+```
+
+El gate solo promueve si mejoran log-loss y Brier sin degradar ECE más de un punto porcentual; el manifiesto registra fase, corte, métricas y versión de rollback. Un rechazo no interrumpe las actualizaciones de estado ni mercados.
+
 ## Notebook y pruebas
 
 El notebook editable es `notebooks/Proyecto_Mundial_2026.ipynb` y la entrega con resultados reales está en `notebooks/Proyecto_Mundial_2026_Ejecutado.ipynb`. En Colab use `requirements-colab.txt`; TensorFlow ya viene incluido en el runtime con GPU.

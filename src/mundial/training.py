@@ -188,6 +188,8 @@ def train_all(
     bayes_steps: int = 50_000,
     posterior_draws: int = 64,
     run_nuts_audit: bool = True,
+    terminal_fold: tuple[str, str, str] | None = None,
+    phase: str | None = None,
 ) -> dict[str, object]:
     set_seeds()
     artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -204,11 +206,16 @@ def train_all(
         "lstm": lambda: build_recurrent(len(STATIC_FEATURES), seq_a.shape[2], "lstm"),
         "gru": lambda: build_recurrent(len(STATIC_FEATURES), seq_a.shape[2], "gru"),
     }
-    folds = (
+    folds = [
         ("2018_2019", "2018-01-01", "2019-12-31"),
         ("2020_2021", "2020-01-01", "2021-12-31"),
         ("2022_pre_wc", "2022-01-01", "2022-11-19"),
-    )
+    ]
+    if terminal_fold is not None:
+        fold_name, start_date, end_date = terminal_fold
+        if not (frame["date"] < start_date).any() or not frame["date"].between(start_date, end_date).any():
+            raise ValueError("El fold terminal debe tener entrenamiento anterior y partidos de evaluacion")
+        folds.append((fold_name, start_date, end_date))
     oof: dict[str, list[np.ndarray]] = {name: [] for name in factories}
     oof_truth: list[np.ndarray] = []
     fold_report: dict[str, list[dict[str, object]]] = {name: [] for name in factories}
@@ -359,6 +366,8 @@ def train_all(
         "version": ARTIFACT_VERSION, "posterior_draws": posterior_draws,
         "selected_model": selected, "as_of_date": str(frame["date"].max().date()),
         "production_epochs": production_epochs,
+        "phase": phase,
+        "terminal_temporal_fold": terminal_fold[0] if terminal_fold else None,
     }
     (artifacts_dir / "artifact_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     summary = {

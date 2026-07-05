@@ -66,6 +66,32 @@ def load_results(raw_dir: Path = RAW_DIR, as_of_date: str | pd.Timestamp | None 
     return frame
 
 
+def append_official_tournament_results(results: pd.DataFrame, state_path: Path) -> pd.DataFrame:
+    """Añade resultados aprobados usando solo datos conocidos al inicio de cada partido."""
+    from mundial.tournament_state import load_tournament_state
+
+    state = load_tournament_state(state_path, required=True)
+    rows = []
+    for match in state.finished_matches.values():
+        if not match.score_90 or not match.team_a or not match.team_b:
+            continue
+        rows.append({
+            "date": pd.Timestamp(match.kickoff).tz_localize(None),
+            "home_team": match.team_a, "away_team": match.team_b,
+            "home_score": match.score_90[0], "away_score": match.score_90[1],
+            "neutral": True, "tournament": "FIFA World Cup 2026",
+            "official_match_id": match.match_id,
+        })
+    if not rows:
+        return results
+    official = pd.DataFrame(rows)
+    # Exact duplicates are harmless source overlap, but must not train twice.
+    combined = pd.concat([results, official], ignore_index=True)
+    return combined.drop_duplicates(
+        ["date", "home_team", "away_team", "home_score", "away_score"], keep="last"
+    ).sort_values("date").reset_index(drop=True).assign(match_id=lambda frame: np.arange(len(frame), dtype=np.int64))
+
+
 def load_rankings(raw_dir: Path = RAW_DIR) -> pd.DataFrame:
     aliases = load_aliases()
     ranking_dir = raw_dir / "fifa_rankings"
@@ -275,11 +301,15 @@ def build_sequences(matches: pd.DataFrame, history: pd.DataFrame, lookback: int 
 def save_processed_dataset(
     output_dir: Path = PROCESSED_DIR,
     as_of_date: str | pd.Timestamp | None = None,
+    tournament_state_path: Path | None = None,
 ) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    matches, seq_a, seq_b = build_match_dataset(
-        load_results(as_of_date=as_of_date), load_rankings(), build_player_snapshots()
-    )
+    results = load_results(as_of_date=as_of_date)
+    if tournament_state_path is not None:
+        results = append_official_tournament_results(results, tournament_state_path)
+        if as_of_date is not None:
+            results = results.loc[results["date"] <= pd.Timestamp(as_of_date)].reset_index(drop=True)
+    matches, seq_a, seq_b = build_match_dataset(results, load_rankings(), build_player_snapshots())
     table_path = output_dir / "matches.parquet"
     sequence_path = output_dir / "sequences.npz"
     matches.to_parquet(table_path, index=False)
@@ -288,6 +318,7 @@ def save_processed_dataset(
         "rows": len(matches), "static_features": list(STATIC_FEATURES),
         "sequence_features": list(SEQUENCE_FEATURES), "lookback": 10,
         "as_of_date": None if as_of_date is None else str(pd.Timestamp(as_of_date).date()),
+        "tournament_state": str(tournament_state_path) if tournament_state_path else None,
     }
     (output_dir / "dataset_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return table_path, sequence_path

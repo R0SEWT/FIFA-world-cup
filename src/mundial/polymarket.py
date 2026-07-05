@@ -9,9 +9,12 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from mundial.config import load_aliases
+
+if TYPE_CHECKING:
+    from mundial.tournament_state import TournamentState
 
 _TIMEOUT = 30
 _WORLD_CUP_TAG_ID = 102232
@@ -279,3 +282,11 @@ def load_snapshot(snapshot_path: Path) -> list[MarketPrice]:
     if not isinstance(items, list):
         raise ValueError("Formato de snapshot Polymarket inválido")
     return [MarketPrice(**item) for item in items]
+
+
+def filter_pending_markets(markets: list[MarketPrice], state: "TournamentState") -> list[MarketPrice]:
+    """Conserva exclusivamente cotizaciones 1-X-2 de cruces oficiales pendientes."""
+    from mundial.tournament_state import pending_team_pairs
+
+    pending = pending_team_pairs(state)
+    return [market for market in markets if frozenset((market.team_a, market.team_b)) in pending]

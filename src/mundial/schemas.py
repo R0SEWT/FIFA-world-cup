@@ -105,6 +105,8 @@ class BracketMatch:
     probability_a: float
     probability_b: float
     forced: bool = False
+    status: str = "simulated"
+    official: bool = False
 
 
 @dataclass

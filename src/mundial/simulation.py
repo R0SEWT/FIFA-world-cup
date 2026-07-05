@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from itertools import combinations
-from typing import Mapping
+from typing import TYPE_CHECKING, Mapping
 
 import numpy as np
 
 from mundial.prediction import Predictor
 from mundial.schemas import BracketMatch, GroupProjection, MatchPrediction, TournamentSimulation
+
+if TYPE_CHECKING:
+    from mundial.tournament_state import TournamentState
 
 GROUPS = tuple("ABCDEFGHIJKL")
 THIRD_ELIGIBILITY: dict[str, tuple[str, ...]] = {
@@ -171,8 +174,10 @@ class TournamentSimulator:
     def __init__(self, predictor: Predictor) -> None:
         self.predictor = predictor
         self._prediction_cache: dict[tuple[str, str, int | None], MatchPrediction] = {}
+        self._used_pairs: set[tuple[str, str]] = set()
 
     def _predict(self, team_a: str, team_b: str, posterior_draw: int | None = None) -> MatchPrediction:
+        self._used_pairs.add(tuple(sorted((team_a, team_b))))
         key = (team_a, team_b, posterior_draw)
         if key not in self._prediction_cache:
             try:
@@ -196,13 +201,21 @@ class TournamentSimulator:
                 self._prediction_cache[(pair[0], pair[1], None)] = prediction
 
     def _play_group(
-        self, teams: list[str], rng: np.random.Generator, posterior_draw: int | None
+        self, teams: list[str], rng: np.random.Generator, posterior_draw: int | None,
+        fixed_games: Mapping[frozenset[str], _PlayedGame] | None = None,
     ) -> tuple[list[_Stats], list[_PlayedGame]]:
         stats = {team: _Stats(team) for team in teams}
         games: list[_PlayedGame] = []
         for team_a, team_b in combinations(teams, 2):
-            goals_a, goals_b = _sample_score(self._predict(team_a, team_b, posterior_draw), rng)
-            game = _PlayedGame(team_a, team_b, goals_a, goals_b)
+            fixed = (fixed_games or {}).get(frozenset((team_a, team_b)))
+            if fixed:
+                if fixed.team_a == team_a:
+                    game = fixed
+                else:
+                    game = _PlayedGame(team_a, team_b, fixed.goals_b, fixed.goals_a)
+            else:
+                goals_a, goals_b = _sample_score(self._predict(team_a, team_b, posterior_draw), rng)
+                game = _PlayedGame(team_a, team_b, goals_a, goals_b)
             games.append(game)
             _apply_game(stats, game)
         return _rank_group(stats, games, rng), games
@@ -216,7 +229,22 @@ class TournamentSimulator:
         overrides: Mapping[str, str],
         rng: np.random.Generator,
         posterior_draw: int | None,
+        tournament_state: "TournamentState | None" = None,
     ) -> BracketMatch:
+        official_match = tournament_state.matches.get(match_id) if tournament_state else None
+        if official_match and official_match.team_a and official_match.team_b:
+            if {team_a, team_b} != {official_match.team_a, official_match.team_b}:
+                # Once FIFA publishes a pairing it is authoritative, including
+                # tie-breaks that the simplified simulator cannot reconstruct.
+                team_a, team_b = official_match.team_a, official_match.team_b
+        official = bool(official_match and official_match.is_finished)
+        if official:
+            winner = str(official_match.winner)
+            return BracketMatch(
+                match_id=match_id, round_name=round_name, team_a=team_a, team_b=team_b,
+                winner=winner, probability_a=float(winner == team_a), probability_b=float(winner == team_b),
+                forced=False, status="real", official=True,
+            )
         prediction = self._predict(team_a, team_b, posterior_draw)
         decisive_total = prediction.prob_a + prediction.prob_b
         penalty_share_a = prediction.prob_a / decisive_total
@@ -246,6 +274,8 @@ class TournamentSimulator:
             probability_a=probability_a,
             probability_b=probability_b,
             forced=forced,
+            status="real" if official else "simulated",
+            official=official,
         )
 
     def _knockout(
@@ -255,6 +285,7 @@ class TournamentSimulator:
         overrides: Mapping[str, str],
         rng: np.random.Generator,
         posterior_draw: int | None,
+        tournament_state: "TournamentState | None" = None,
     ) -> tuple[str, list[BracketMatch]]:
         third_slot = _allocate_thirds(best_thirds)
         first = {group: ranked[group][0].team for group in GROUPS}
@@ -282,10 +313,12 @@ class TournamentSimulator:
         losers: dict[str, str] = {}
 
         def play(match_id: str, round_name: str, team_a: str, team_b: str) -> None:
-            match = self._play_knockout(match_id, round_name, team_a, team_b, overrides, rng, posterior_draw)
+            match = self._play_knockout(
+                match_id, round_name, team_a, team_b, overrides, rng, posterior_draw, tournament_state
+            )
             matches.append(match)
             winners[match_id] = match.winner
-            losers[match_id] = team_b if match.winner == team_a else team_a
+            losers[match_id] = match.team_b if match.winner == match.team_a else match.team_a
 
         for match_id, teams in r32.items():
             play(match_id, "Ronda de 32", *teams)
@@ -313,14 +346,33 @@ class TournamentSimulator:
         overrides: Mapping[str, str] | None = None,
         runs: int = 2_000,
         seed: int = 2026,
+        tournament_state: "TournamentState | None" = None,
     ) -> TournamentSimulation:
         validate_groups(groups)
         if runs < 1:
             raise ValueError("runs debe ser al menos 1")
         overrides = overrides or {}
+        self._used_pairs = set()
         rng = np.random.default_rng(seed)
         all_teams = [team for group in GROUPS for team in groups[group]]
-        self._warm_prediction_cache(all_teams)
+        active_teams = set(all_teams)
+        fixed_by_group: dict[str, dict[frozenset[str], _PlayedGame]] = {group: {} for group in GROUPS}
+        if tournament_state:
+            eliminated = tournament_state.eliminated_teams(groups)
+            active_teams -= eliminated
+            team_group = {team: group for group in GROUPS for team in groups[group]}
+            for match in tournament_state.finished_matches.values():
+                is_group_match = match.phase.strip().lower() in {"group", "group stage", "fase de grupos", "grupos"}
+                if is_group_match and match.score_90 and match.team_a in team_group and match.team_b in team_group:
+                    group = match.group or team_group[match.team_a]
+                    if group == team_group[match.team_b]:
+                        fixed_by_group[group][frozenset((match.team_a, match.team_b))] = _PlayedGame(
+                            match.team_a, match.team_b, *match.score_90
+                        )
+        else:
+            eliminated = set()
+        if tournament_state is None:
+            self._warm_prediction_cache(sorted(active_teams))
         posterior_draws = int(getattr(self.predictor, "posterior_draws", 0))
         accum = {
             group: {team: {"points": 0.0, "gf": 0.0, "ga": 0.0, "qualified": 0} for team in groups[group]}
@@ -333,7 +385,7 @@ class TournamentSimulator:
             ranked: dict[str, list[_Stats]] = {}
             thirds: list[tuple[str, _Stats]] = []
             for group in GROUPS:
-                table, _ = self._play_group(list(groups[group]), rng, posterior_draw)
+                table, _ = self._play_group(list(groups[group]), rng, posterior_draw, fixed_by_group[group])
                 ranked[group] = table
                 thirds.append((group, table[2]))
                 for row in table:
@@ -348,7 +400,9 @@ class TournamentSimulator:
             for group in GROUPS:
                 for team in groups[group]:
                     accum[group][team]["qualified"] += int(team in qualified)
-            champion, bracket = self._knockout(ranked, best_thirds, overrides, rng, posterior_draw)
+            champion, bracket = self._knockout(
+                ranked, best_thirds, overrides, rng, posterior_draw, tournament_state
+            )
             champions[champion] += 1
             if run == 0:
                 representative = bracket
@@ -386,13 +440,12 @@ class TournamentSimulator:
                 min(1.0, float(center + half_width)),
             )
         # ponytail: count unique pairs; market_weight is snapshot-based, same across posterior draws
-        seen_pairs: set[tuple[str, str]] = set()
         market_crossings_used = 0
         fallback_count = 0
         for (ta, tb, _), pred in self._prediction_cache.items():
             pair = tuple(sorted((ta, tb)))
-            if pair not in seen_pairs:
-                seen_pairs.add(pair)
+            if pair in self._used_pairs:
+                self._used_pairs.remove(pair)
                 mw = getattr(pred, "market_weight", None)
                 if mw is not None and mw > 0:
                     market_crossings_used += 1
@@ -408,6 +461,12 @@ class TournamentSimulator:
                 "group_matches_per_run": 72, "knockout_matches_per_run": 32,
                 "posterior_draws": posterior_draws, "champion_confidence_intervals_95": champion_intervals,
                 "market_crossings_used": market_crossings_used, "fallback_count": fallback_count,
+                "official_state_hash": tournament_state.to_dict()["hash"] if tournament_state else None,
+                "official_matches_fixed": len(tournament_state.finished_matches) if tournament_state else 0,
+                "eliminated_teams": sorted(eliminated),
+                "pending_matches_sampled_per_run": (
+                    104 - len(tournament_state.finished_matches) if tournament_state else 104
+                ),
             },
         )
 
@@ -418,6 +477,7 @@ def simulate_tournament(
     overrides: Mapping[str, str] | None = None,
     runs: int = 2_000,
     seed: int = 2026,
+    tournament_state: "TournamentState | None" = None,
 ) -> TournamentSimulation:
     """Interfaz funcional solicitada por el dashboard."""
-    return TournamentSimulator(predictor).simulate(groups, overrides, runs, seed)
+    return TournamentSimulator(predictor).simulate(groups, overrides, runs, seed, tournament_state)
