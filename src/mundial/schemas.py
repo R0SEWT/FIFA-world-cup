@@ -19,6 +19,12 @@ class MatchPrediction:
     expected_goals_b: float
     likely_score: tuple[int, int]
     score_probabilities: tuple[tuple[float, ...], ...] | None = None
+    # Optional Polymarket market blend fields (set only when market data is available)
+    base_probabilities: tuple[float, float, float] | None = None
+    market_probabilities: tuple[float, float, float] | None = None
+    market_weight: float | None = None
+    market_as_of: str | None = None
+    market_slug: str | None = None
 
     def __post_init__(self) -> None:
         probabilities = (self.prob_a, self.prob_draw, self.prob_b)
@@ -26,6 +32,14 @@ class MatchPrediction:
             raise ValueError("Las probabilidades deben estar entre 0 y 1")
         if abs(sum(probabilities) - 1.0) > 1e-6:
             raise ValueError("Las probabilidades deben sumar 1")
+        for field_name, triple in (("base_probabilities", self.base_probabilities), ("market_probabilities", self.market_probabilities)):
+            if triple is not None:
+                if len(triple) != 3 or any(v < 0.0 or v > 1.0 for v in triple):
+                    raise ValueError(f"{field_name}: valores deben estar en [0,1]")
+                if abs(sum(triple) - 1.0) > 1e-6:
+                    raise ValueError(f"{field_name}: debe sumar 1")
+        if self.market_weight is not None and not (0.0 <= self.market_weight <= 1.0):
+            raise ValueError("market_weight debe estar en [0.0, 1.0]")
         if self.score_probabilities is not None:
             matrix = np.asarray(self.score_probabilities, dtype=float)
             if matrix.shape != (13, 13):
