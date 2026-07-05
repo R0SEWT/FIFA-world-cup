@@ -56,8 +56,9 @@ def _ece(probs: np.ndarray, outcomes: np.ndarray, n_bins: int = 10) -> float:
     correct = (np.argmax(probs, axis=1) == outcomes).astype(float)
     n = len(outcomes)
     ece = 0.0
-    for lo, hi in zip(np.linspace(0.0, 1.0, n_bins + 1)[:-1], np.linspace(0.0, 1.0, n_bins + 1)[1:]):
-        mask = (confidence >= lo) & (confidence < hi)
+    bins = np.linspace(0.0, 1.0, n_bins + 1)
+    for idx, (lo, hi) in enumerate(zip(bins[:-1], bins[1:])):
+        mask = (confidence >= lo) & (confidence <= hi if idx == n_bins - 1 else confidence < hi)
         if not mask.any():
             continue
         ece += mask.sum() * abs(correct[mask].mean() - confidence[mask].mean()) / n
@@ -103,7 +104,8 @@ def _join_data(poly: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
     # Normalize to tz-naive date for comparison
     es = poly["event_start"]
     poly_date = (es.dt.tz_convert(None) if es.dt.tz is not None else es).dt.normalize()
-    match_date = matches["date"].dt.normalize()
+    md = pd.to_datetime(matches["date"], utc=True)
+    match_date = md.dt.tz_convert(None).dt.normalize()
 
     records = []
     for i, pm in enumerate(poly.itertuples(index=False)):
@@ -181,8 +183,8 @@ def run_blend_evaluation(
     pairs = list(zip(joined["team_a"], joined["team_b"]))
     try:
         preds = predictor.predict_matches(pairs)
-    except Exception as exc:
-        log.warning("muestra insuficiente: %s", exc)
+    except (OSError, KeyError, ValueError) as exc:
+        log.warning("prediccion fallida: %s", exc)
         return _write_insufficient("muestra insuficiente")
 
     dl_probs = np.array([[p.prob_a, p.prob_draw, p.prob_b] for p in preds])
