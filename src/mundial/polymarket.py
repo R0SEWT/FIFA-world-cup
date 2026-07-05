@@ -44,7 +44,8 @@ def _extract_teams(title: str, aliases: dict[str, str]) -> tuple[str, str] | Non
     for sep in _VS_SEPARATORS:
         if sep in title:
             parts = title.split(sep, 1)
-            return _resolve(parts[0], aliases), _resolve(parts[1], aliases)
+            team_b = parts[1].strip().split(" - ")[0].strip()
+            return _resolve(parts[0], aliases), _resolve(team_b, aliases)
     return None
 
 
@@ -108,7 +109,10 @@ class PolymarketClient:
 
     def _is_soccer_event(self, event: dict) -> bool:
         tags = [t.get("slug", "") for t in event.get("tags", [])]
-        return any(s in _SOCCER_TAGS for s in tags)
+        tag_match = any(s in _SOCCER_TAGS for s in tags)
+        slug = event.get("slug", "").lower()
+        slug_match = any(s in slug for s in _SOCCER_TAGS)
+        return tag_match and slug_match
 
     def _build_market_price(
         self,
@@ -139,7 +143,7 @@ class PolymarketClient:
             return None
 
         try:
-            raw_prices = [self._last_price_before(t.get("conditionId", condition_id), cutoff) for t in tokens]
+            raw_prices = [self._last_price_before(t.get("token_id") or t.get("conditionId") or condition_id, cutoff) for t in tokens]
         except Exception:
             return None
 
@@ -147,7 +151,8 @@ class PolymarketClient:
             return None
 
         raw_prices_f: list[float] = [float(p) for p in raw_prices]  # type: ignore[arg-type]
-        spread = max(raw_prices_f) - min(raw_prices_f)
+        normed = normalize_prices(raw_prices_f)
+        spread = max(normed) - min(normed)
         if spread > self.max_spread:
             return None
 
@@ -159,8 +164,6 @@ class PolymarketClient:
         teams = _extract_teams(title, aliases)
         if teams is None:
             return None
-
-        normed = normalize_prices(raw_prices_f)
         return MarketPrice(
             team_a=teams[0],
             team_b=teams[1],
@@ -217,7 +220,7 @@ def load_snapshot(snapshot_path: Path) -> list[MarketPrice]:
 if __name__ == "__main__":
     # ponytail: self-check verifies normalization and alias resolution without network
     r = normalize_prices([0.5, 0.3, 0.2])
-    assert abs(sum(r) - 1.0) < 1e-9 and r == [0.5, 0.3, 0.2], r
+    assert abs(sum(r) - 1.0) < 1e-9 and all(abs(a - b) < 1e-9 for a, b in zip(r, [0.5, 0.3, 0.2])), r
 
     r2 = normalize_prices([0.4, 0.3, 0.2])
     assert abs(sum(r2) - 1.0) < 1e-9, r2
