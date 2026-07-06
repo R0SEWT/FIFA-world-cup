@@ -34,6 +34,80 @@ def test_parse_fifa_payload_and_hash_round_trip(tmp_path: Path):
     assert json.loads(path.read_text())["hash"]
 
 
+def test_parse_official_fifa_api_v3_payload():
+    payload = {
+        "Results": [
+            {
+                "MatchNumber": 1,
+                "Date": "2026-06-11T19:00:00Z",
+                "StageName": [{"Locale": "en-GB", "Description": "First Stage"}],
+                "GroupName": [{"Locale": "en-GB", "Description": "Group A"}],
+                "Home": {
+                    "IdTeam": "43911",
+                    "TeamName": [{"Locale": "en-GB", "Description": "Mexico"}],
+                    "Score": 2,
+                },
+                "Away": {
+                    "IdTeam": "43959",
+                    "TeamName": [{"Locale": "en-GB", "Description": "South Africa"}],
+                    "Score": 0,
+                },
+                "HomeTeamScore": 2,
+                "AwayTeamScore": 0,
+                "Winner": "43911",
+                "MatchStatus": 0,
+                "MatchTime": "98'",
+            },
+            {
+                "MatchNumber": 104,
+                "Date": "2026-07-19T19:00:00Z",
+                "StageName": [{"Locale": "en-GB", "Description": "Final"}],
+                "GroupName": [],
+                "Home": None,
+                "Away": None,
+                "HomeTeamScore": None,
+                "AwayTeamScore": None,
+                "Winner": None,
+                "MatchStatus": 1,
+            },
+        ]
+    }
+    parsed = parse_fifa_payload(payload, source_url="https://api.fifa.example")
+    assert parsed.metadata["provider_schema"] == "fifa_api_v3"
+    assert parsed.matches["M1"].phase == "group"
+    assert parsed.matches["M1"].group == "A"
+    assert parsed.matches["M1"].team_a == "Mexico"
+    assert parsed.matches["M1"].score_90 == (2, 0)
+    assert parsed.matches["M1"].winner == "Mexico"
+    assert parsed.matches["M104"].phase == "final"
+    assert parsed.matches["M104"].status == "scheduled"
+
+
+def test_parse_fifa_api_v3_penalty_winner_validates():
+    payload = {
+        "Results": [
+            {
+                "MatchNumber": 104,
+                "Date": "2026-07-19T19:00:00Z",
+                "StageName": [{"Locale": "en-GB", "Description": "Final"}],
+                "GroupName": [],
+                "Home": {"IdTeam": "A", "TeamName": [{"Locale": "en-GB", "Description": "A"}]},
+                "Away": {"IdTeam": "B", "TeamName": [{"Locale": "en-GB", "Description": "B"}]},
+                "HomeTeamScore": 1,
+                "AwayTeamScore": 1,
+                "HomeTeamPenaltyScore": 5,
+                "AwayTeamPenaltyScore": 4,
+                "Winner": "A",
+                "MatchStatus": 0,
+                "MatchTime": "120'",
+            }
+        ]
+    }
+    parsed = parse_fifa_payload(payload, source_url="https://api.fifa.example")
+    assert parsed.matches["M104"].penalties == (5, 4)
+    validate_state(parsed, now=datetime(2026, 7, 20, tzinfo=timezone.utc), require_complete=False)
+
+
 def test_future_result_and_wrong_winner_are_rejected():
     future = match(kickoff="2027-01-01T00:00:00Z")
     with pytest.raises(ValueError, match="futuro"):

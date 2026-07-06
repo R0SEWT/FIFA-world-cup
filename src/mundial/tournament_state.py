@@ -17,11 +17,13 @@ from mundial.config import ARTIFACTS_DIR, load_aliases, load_groups
 
 FIFA_SOURCE_URL = os.environ.get(
     "MUNDIAL_FIFA_SOURCE_URL",
-    "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/scores-fixtures",
+    "https://api.fifa.com/api/v3/calendar/matches?language=en&count=200&idCompetition=17&idSeason=285023",
 )
 STATE_PATH = ARTIFACTS_DIR / "tournament_state.json"
 CANDIDATE_PATH = ARTIFACTS_DIR / "tournament_state.candidate.json"
 VALID_STATUSES = {"scheduled", "in_progress", "finished"}
+FIFA_FINISHED_STATUSES = {0, "0", "finished", "completed", "final"}
+FIFA_SCHEDULED_STATUSES = {1, "1", "scheduled", "not_started", "not started"}
 
 
 def utc_now() -> str:
@@ -205,6 +207,109 @@ def _is_knockout(phase: str) -> bool:
     return not _is_group(phase)
 
 
+def _localized_description(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, Mapping) and item.get("Description"):
+                return str(item["Description"])
+    return None
+
+
+def _team_name(value: Any) -> str | None:
+    if not isinstance(value, Mapping):
+        return None
+    return (
+        _localized_description(value.get("TeamName"))
+        or value.get("ShortClubName")
+        or value.get("Abbreviation")
+    )
+
+
+def _score_pair(home: Any, away: Any) -> tuple[int, int] | None:
+    if home is None or away is None:
+        return None
+    return int(home), int(away)
+
+
+def _first_present(*values: Any) -> Any:
+    return next((value for value in values if value is not None), None)
+
+
+def _normalize_fifa_phase(stage: str | None) -> str:
+    value = (stage or "").strip().lower()
+    if value in {"first stage", "group", "group stage"}:
+        return "group"
+    return {
+        "round of 32": "round_of_32",
+        "round of 16": "round_of_16",
+        "quarter-final": "quarter_final",
+        "quarter-finals": "quarter_final",
+        "semi-final": "semi_final",
+        "semi-finals": "semi_final",
+        "play-off for third place": "third_place",
+        "third place": "third_place",
+        "final": "final",
+    }.get(value, stage or "")
+
+
+def _normalize_fifa_status(raw: Mapping[str, Any], score: tuple[int, int] | None) -> str:
+    status = raw.get("MatchStatus")
+    if status in FIFA_FINISHED_STATUSES:
+        return "finished"
+    if status in FIFA_SCHEDULED_STATUSES:
+        return "scheduled"
+    if score is not None and raw.get("MatchTime"):
+        return "in_progress"
+    return "scheduled"
+
+
+def _normalize_fifa_match(raw: Mapping[str, Any], aliases: Mapping[str, str]) -> TournamentMatch:
+    number = raw.get("MatchNumber") or raw.get("MatchNo") or raw.get("Order")
+    if number is None:
+        raise ValueError("FIFA devolvio un partido sin numero oficial")
+    match_id = f"M{int(number)}"
+    home = raw.get("Home") if isinstance(raw.get("Home"), Mapping) else {}
+    away = raw.get("Away") if isinstance(raw.get("Away"), Mapping) else {}
+    team_a = _team_name(home)
+    team_b = _team_name(away)
+    team_a = aliases.get(team_a, team_a) if team_a else None
+    team_b = aliases.get(team_b, team_b) if team_b else None
+    score = _score_pair(
+        _first_present(raw.get("HomeTeamScore"), home.get("Score")),
+        _first_present(raw.get("AwayTeamScore"), away.get("Score")),
+    )
+    penalties = _score_pair(raw.get("HomeTeamPenaltyScore"), raw.get("AwayTeamPenaltyScore"))
+    winner = None
+    raw_winner = raw.get("Winner")
+    if raw_winner:
+        winner_text = str(raw_winner)
+        if winner_text == str(home.get("IdTeam")):
+            winner = team_a
+        elif winner_text == str(away.get("IdTeam")):
+            winner = team_b
+        else:
+            winner = aliases.get(winner_text, winner_text)
+    group_name = _localized_description(raw.get("GroupName"))
+    group = group_name.replace("Group ", "", 1) if group_name and group_name.startswith("Group ") else group_name
+    return TournamentMatch(
+        match_id=match_id,
+        phase=_normalize_fifa_phase(_localized_description(raw.get("StageName"))),
+        group=group,
+        kickoff=str(raw.get("Date") or raw.get("LocalDate") or ""),
+        status=_normalize_fifa_status(raw, score),
+        team_a=team_a,
+        team_b=team_b,
+        score_90=score,
+        score_extra_time=None,
+        penalties=penalties,
+        winner=winner,
+        source_a=raw.get("HomeTeamSource") or raw.get("HomeTeamPosition"),
+        source_b=raw.get("AwayTeamSource") or raw.get("AwayTeamPosition"),
+    )
+
+
 def _dependency_winner(source: str | None, matches: Mapping[str, TournamentMatch]) -> str | None:
     if not source:
         return None
@@ -323,8 +428,12 @@ def approve_candidate(candidate_path: Path = CANDIDATE_PATH, state_path: Path = 
 
 def parse_fifa_payload(payload: Any, *, source_url: str = FIFA_SOURCE_URL) -> TournamentState:
     """Normaliza JSON de FIFA; admite envoltorios usados por APIs y fixtures."""
+    fifa_api_v3 = False
     if isinstance(payload, Mapping):
         items: Any = payload.get("matches") or payload.get("results") or payload.get("data")
+        if items is None and isinstance(payload.get("Results"), list):
+            items = payload["Results"]
+            fifa_api_v3 = True
         if isinstance(items, Mapping):
             items = items.get("matches") or items.get("results") or items.get("items")
         updated = payload.get("updated_at") or payload.get("lastUpdated")
@@ -337,7 +446,7 @@ def parse_fifa_payload(payload: Any, *, source_url: str = FIFA_SOURCE_URL) -> To
     for raw in items:
         if not isinstance(raw, Mapping):
             continue
-        match = TournamentMatch.from_dict(raw)
+        match = _normalize_fifa_match(raw, aliases) if fifa_api_v3 else TournamentMatch.from_dict(raw)
         if not match.match_id or match.match_id == "None":
             raise ValueError("FIFA devolvio un partido sin identificador oficial")
         if match.match_id in matches:
@@ -347,7 +456,8 @@ def parse_fifa_payload(payload: Any, *, source_url: str = FIFA_SOURCE_URL) -> To
         normalized["team_b"] = aliases.get(match.team_b, match.team_b) if match.team_b else None
         normalized["winner"] = aliases.get(match.winner, match.winner) if match.winner else None
         matches[match.match_id] = TournamentMatch(**normalized)
-    return TournamentState(utc_now(), source_url, str(updated) if updated else None, matches)
+    metadata = {"provider_schema": "fifa_api_v3"} if fifa_api_v3 else {}
+    return TournamentState(utc_now(), source_url, str(updated) if updated else None, matches, metadata=metadata)
 
 
 def fetch_fifa_state(url: str = FIFA_SOURCE_URL, *, timeout: int = 30) -> TournamentState:

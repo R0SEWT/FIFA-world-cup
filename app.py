@@ -2,17 +2,33 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from mundial.config import load_groups
+from mundial.config import ARTIFACTS_DIR, load_groups
 from mundial.history import load_world_cup_titles
 from mundial.inference import load_predictor
+from mundial.polymarket import filter_pending_markets, load_snapshot
 from mundial.simulation import GROUPS, TournamentSimulator, validate_groups
-from mundial.tournament_state import STATE_PATH, load_tournament_state
+from mundial.tournament_state import (
+    CANDIDATE_PATH,
+    FIFA_SOURCE_URL,
+    STATE_PATH,
+    approve_candidate,
+    fetch_fifa_state,
+    load_tournament_state,
+    utc_now,
+    validate_state,
+    write_state,
+)
 
 st.set_page_config(page_title="Inteligencia Mundial 2026", page_icon="⚽", layout="wide")
 
@@ -64,7 +80,73 @@ def render_probability_cards(prediction) -> None:
             st.info("Este cruce no usa una cotización Polymarket válida; se sirve el modelo DL.")
 
 
+def _write_update_status(ok: bool, error: str | None = None, **extra: object) -> None:
+    status_path = STATE_PATH.with_name("tournament_state_update.json")
+    payload = {"attempted_at": utc_now(), "ok": ok, "error": error, **extra}
+    status_path.parent.mkdir(parents=True, exist_ok=True)
+    status_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _refresh_polymarket_snapshot(state) -> str | None:
+    command = [
+        sys.executable,
+        str(Path(__file__).with_name("scripts") / "generate_polymarket_snapshot.py"),
+        "--output", str(ARTIFACTS_DIR / "polymarket_snapshot.json"),
+        "--tournament-state", str(STATE_PATH),
+    ]
+    env = os.environ.copy()
+    src_path = str(Path(__file__).resolve().parent / "src")
+    env["PYTHONPATH"] = src_path + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    result = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
+    if not result.returncode:
+        return None
+    refresh_error = (result.stderr or result.stdout).strip()
+    snapshot_path = ARTIFACTS_DIR / "polymarket_snapshot.json"
+    if snapshot_path.exists():
+        retained = filter_pending_markets(load_snapshot(snapshot_path), state)
+        old = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        old["markets"] = [dataclasses.asdict(market) for market in retained]
+        old["tournament_state_hash"] = state.to_dict()["hash"]
+        old["refresh_error"] = refresh_error
+        snapshot_path.write_text(json.dumps(old, indent=2, ensure_ascii=False), encoding="utf-8")
+    return refresh_error
+
+
+def refresh_official_state():
+    try:
+        state = fetch_fifa_state(FIFA_SOURCE_URL)
+        approved = load_tournament_state(STATE_PATH)
+        validate_state(state, approved)
+        write_state(state, CANDIDATE_PATH)
+        promoted = approve_candidate(CANDIDATE_PATH, STATE_PATH)
+        polymarket_error = _refresh_polymarket_snapshot(promoted)
+        _write_update_status(True, None, polymarket_error=polymarket_error)
+        return promoted, polymarket_error
+    except Exception as error:
+        CANDIDATE_PATH.unlink(missing_ok=True)
+        _write_update_status(False, str(error))
+        raise
+
+
 st.title("⚽ Inteligencia deportiva — Mundial 2026")
+with st.sidebar:
+    st.header("Datos oficiales")
+    st.caption("Fuente FIFA API v3")
+    if st.button("Actualizar FIFA y recalcular", type="primary", width="stretch"):
+        with st.spinner("Consultando FIFA y recalculando el torneo..."):
+            try:
+                promoted_state, market_error = refresh_official_state()
+                st.session_state["overrides"] = {}
+                resources.clear()
+                message = f"Actualizado: {len(promoted_state.finished_matches)} partidos oficiales."
+                if market_error:
+                    st.warning(message + " Polymarket no se pudo refrescar; se filtró el snapshot anterior.")
+                else:
+                    st.success(message)
+                st.rerun()
+            except Exception as error:
+                st.error(f"No se modifico el estado aprobado: {error}")
+
 # The approved state mtime invalidates both the market snapshot adapter and
 # the simulator cache after a promotion, without retraining the backbone.
 state_version = STATE_PATH.stat().st_mtime_ns if STATE_PATH.exists() else 0
