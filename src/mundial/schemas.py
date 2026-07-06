@@ -104,6 +104,9 @@ class BracketMatch:
     winner: str
     probability_a: float
     probability_b: float
+    match_probability_a: float = 0.0
+    draw_probability: float = 0.0
+    match_probability_b: float = 0.0
     forced: bool = False
     status: str = "simulated"
     official: bool = False

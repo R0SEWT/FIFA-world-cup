@@ -240,9 +240,17 @@ class TournamentSimulator:
         official = bool(official_match and official_match.is_finished)
         if official:
             winner = str(official_match.winner)
+            if winner == team_a:
+                match_probability_a, draw_probability, match_probability_b = 1.0, 0.0, 0.0
+            elif winner == team_b:
+                match_probability_a, draw_probability, match_probability_b = 0.0, 0.0, 1.0
+            else:
+                match_probability_a, draw_probability, match_probability_b = 0.0, 1.0, 0.0
             return BracketMatch(
                 match_id=match_id, round_name=round_name, team_a=team_a, team_b=team_b,
                 winner=winner, probability_a=float(winner == team_a), probability_b=float(winner == team_b),
+                match_probability_a=match_probability_a, draw_probability=draw_probability,
+                match_probability_b=match_probability_b,
                 forced=False, status="real", official=True,
             )
         prediction = self._predict(team_a, team_b, posterior_draw)
@@ -273,6 +281,9 @@ class TournamentSimulator:
             winner=winner,
             probability_a=probability_a,
             probability_b=probability_b,
+            match_probability_a=prediction.prob_a,
+            draw_probability=prediction.prob_draw,
+            match_probability_b=prediction.prob_b,
             forced=forced,
             status="real" if official else "simulated",
             official=official,

@@ -31,6 +31,15 @@ def test_complete_tournament_has_expected_structure():
     assert qualification_sum == pytest.approx(32.0)
 
 
+def test_knockout_matches_report_three_way_probabilities():
+    result = TournamentSimulator(DemoPredictor()).simulate(load_groups(), runs=2, seed=13)
+    for match in result.bracket:
+        assert match.match_probability_a + match.draw_probability + match.match_probability_b == pytest.approx(1.0)
+        assert 0.0 <= match.match_probability_a <= 1.0
+        assert 0.0 <= match.draw_probability <= 1.0
+        assert 0.0 <= match.match_probability_b <= 1.0
+
+
 def test_final_override_is_respected_with_same_seed():
     simulator = TournamentSimulator(DemoPredictor())
     baseline = simulator.simulate(load_groups(), runs=1, seed=11)

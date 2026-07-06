@@ -9,6 +9,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -244,10 +249,14 @@ with bracket_tab:
             for index, match in enumerate(round_matches):
                 forced = " · forzado" if match.forced else ""
                 state_label = "real" if match.official else "simulado"
+                favorite = match.team_a if match.probability_a >= match.probability_b else match.team_b
                 columns[index % 2].markdown(
-                    f"**{match.match_id}** — {match.team_a} ({match.probability_a:.0%}) "
-                    f"vs {match.team_b} ({match.probability_b:.0%})  \n"
-                    f"Ganador: **{match.winner}** · {state_label}{forced}"
+                    f"**{match.match_id}** — {match.team_a} vs {match.team_b}  \n"
+                    f"Favorito: **{favorite}** · Avanza {match.team_a}: {match.probability_a:.0%} · "
+                    f"Avanza {match.team_b}: {match.probability_b:.0%}  \n"
+                    f"90 min: {match.team_a} {match.match_probability_a:.0%} · "
+                    f"Empate {match.draw_probability:.0%} · {match.team_b} {match.match_probability_b:.0%}  \n"
+                    f"Ganador mostrado: **{match.winner}** · {state_label}{forced}"
                 )
         with st.expander("Forzar resultados del cuadro mostrado"):
             pending: dict[str, str] = {}

@@ -154,7 +154,7 @@ def load_predictor(artifacts_dir: Path = ARTIFACTS_DIR):
                 import logging as _log
                 _log.getLogger(__name__).warning("Polymarket opcional no disponible: %s", _exc)
             return keras_predictor, "Modelo híbrido DL + Bayes entrenado"
-        except (ValueError, KeyError, OSError) as error:
+        except (ImportError, ValueError, KeyError, OSError) as error:
             return DemoPredictor(), f"Modo demostracion (artefactos incompatibles: {error})"
     return DemoPredictor(), "Modo demostracion (regenere los artefactos híbridos v2)"
 
