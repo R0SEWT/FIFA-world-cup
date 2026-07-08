@@ -232,18 +232,6 @@ st.markdown(
         color: rgba(255, 255, 255, 0.82);
         font-size: 0.74rem;
     }
-    .image-placeholder {
-        border: 1px dashed rgba(255, 255, 255, 0.22);
-        border-radius: 8px;
-        min-height: 340px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.58);
-        background: rgba(255, 255, 255, 0.025);
-        padding: 1rem;
-    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -1067,6 +1055,27 @@ def render_validation_section(state, update_status: dict[str, object] | None) ->
             st.warning(f"Ultima consulta FIFA fallida: {update_status.get('attempted_at')}")
 
 
+DATA_PIPELINE_DOT = r"""
+digraph flujo {
+  rankdir=TB;
+  bgcolor="transparent";
+  node [shape=box, style="rounded,filled", fontname="Helvetica",
+        fontsize=10, color="#2ec4a6", fillcolor="#2ec4a6",
+        fontcolor="#0b141a", margin="0.18,0.10"];
+  edge [color="#8894a0", penwidth=1.4, arrowsize=0.7];
+
+  raw    [label="data/raw/*\nKaggle · FIFA API v3 · Polymarket"];
+  proc   [label="data/processed\nmatches.parquet + sequences.npz"];
+  model  [label="artifacts/selected_model.keras\nbackbone DL (MLP · LSTM · GRU)"];
+  stat   [label="posteriores bayesianos\ncalibración + Dixon–Coles"];
+  bundle [label="inference_bundle.joblib\nartifact_manifest v2"];
+  app    [label="Streamlit · simulador\nMonte Carlo", fillcolor="#1f6f5c", fontcolor="white"];
+
+  raw -> proc -> model -> stat -> bundle -> app;
+}
+"""
+
+
 def render_data_section() -> None:
     st.header("Datos usados")
     st.caption("De donde viene cada fuente y que se hizo con ella.")
@@ -1125,26 +1134,9 @@ def render_data_section() -> None:
 
     left, right = st.columns([1, 1])
     with left:
-        st.subheader("Espacio para carta FIFA")
-        card_path = next(
-            (
-                path
-                for ext in ("webp", "png", "jpg", "jpeg")
-                if (path := PROJECT_ROOT / "assets" / f"fifa-card.{ext}").exists()
-            ),
-            None,
-        )
-        if card_path is not None:
-            st.image(str(card_path), width="stretch")
-        else:
-            st.markdown(
-                """
-                <div class="image-placeholder">
-                    Espacio reservado para la carta<br><b>assets/fifa-card.*</b>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        st.subheader("Flujo de datos")
+        st.graphviz_chart(DATA_PIPELINE_DOT, width="stretch")
+        st.caption("Del dato crudo al simulador: cada etapa versiona su artefacto.")
     with right:
         st.subheader("Transformacion")
         st.dataframe(
@@ -1439,16 +1431,17 @@ with champions_tab:
             metric_active.metric("Activas", len(active))
             metric_out.metric("Eliminadas", len(eliminated))
 
-            active_frame = pd.DataFrame(
-                [
-                    {
-                        "Seleccion": team_label(team),
-                        "Probabilidad": f"{simulation.champion_probabilities[team]:.2%}",
-                    }
-                    for team in active
-                ]
-            )
-            st.dataframe(active_frame, hide_index=True, width="stretch")
+            with st.expander(f"Ver probabilidades de las {len(active)} activas"):
+                active_frame = pd.DataFrame(
+                    [
+                        {
+                            "Seleccion": team_label(team),
+                            "Probabilidad": f"{simulation.champion_probabilities[team]:.2%}",
+                        }
+                        for team in active
+                    ]
+                )
+                st.dataframe(active_frame, hide_index=True, width="stretch")
 
             with st.expander(f"Ver eliminadas ({len(eliminated)})"):
                 eliminated_frame = pd.DataFrame(
@@ -1466,27 +1459,30 @@ with champions_tab:
                 "IC superior": intervals.get(team, (probability, probability))[1],
             }
             for team, probability in top
-        ])
+        ]).sort_values("Probabilidad")
+        # El IC 95% (error Monte Carlo) va como barras de error sobre cada
+        # barra; asi no hace falta repetir una tabla de probabilidades aparte.
+        chart["err_mas"] = (chart["IC superior"] - chart["Probabilidad"]).clip(lower=0)
+        chart["err_menos"] = (chart["Probabilidad"] - chart["IC inferior"]).clip(lower=0)
         figure = px.bar(
-            chart.sort_values("Probabilidad"), x="Probabilidad", y="Seleccion", orientation="h",
-            text=chart.sort_values("Probabilidad")["Probabilidad"].map(lambda value: f"{value:.1%}"),
+            chart, x="Probabilidad", y="Seleccion", orientation="h",
+            text=chart["Probabilidad"].map(lambda value: f"{value:.1%}"),
+            error_x="err_mas", error_x_minus="err_menos",
+            custom_data=["IC inferior", "IC superior"],
             labels={"Probabilidad": "Probabilidad de ser campeon"},
             color_discrete_sequence=["#2ec4a6"],
         )
         figure.update_xaxes(tickformat=".0%")
-        figure.update_layout(showlegend=False)
-        st.plotly_chart(style_plotly_figure(figure), width="stretch")
-        st.dataframe(
-            chart.assign(
-                Probabilidad=chart["Probabilidad"].map(lambda value: f"{value:.2%}"),
-                **{
-                    "IC 95%": chart.apply(
-                        lambda row: f"{row['IC inferior']:.2%} – {row['IC superior']:.2%}", axis=1
-                    )
-                },
-            )[["Seleccion", "Probabilidad", "IC 95%"]],
-            hide_index=True, width="stretch",
+        figure.update_traces(
+            error_x_color="#9aa7b2",
+            hovertemplate=(
+                "%{y}<br>Probabilidad: %{x:.2%}"
+                "<br>IC 95%: %{customdata[0]:.2%} – %{customdata[1]:.2%}<extra></extra>"
+            ),
         )
+        figure.update_layout(showlegend=False)
+        st.caption("Barras de error = intervalo Monte Carlo al 95% (Wilson).")
+        st.plotly_chart(style_plotly_figure(figure), width="stretch")
         titles, source = load_world_cup_titles()
         context = pd.DataFrame(
             [{"Seleccion": team_label(team), "Titulos mundiales": titles.get(team, 0)} for team, _ in top]
