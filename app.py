@@ -389,7 +389,7 @@ def resources(state_version: int):
     return predictor, TournamentSimulator(predictor), mode
 
 
-@st.cache_data(show_spinner="Simulando el torneo...")
+@st.cache_data(show_spinner=False)
 def run_tournament_simulation(
     _simulator,
     groups: dict[str, list[str]],
@@ -1230,6 +1230,10 @@ predictor_tab, groups_tab, bracket_tab, validation_tab, champions_tab, data_tab 
 
 with predictor_tab:
     st.header("¿Que puede pasar en este partido?")
+    st.caption(
+        "Las cifras son estimaciones del modelo a partir del historial, no certezas: "
+        "un 60% quiere decir que en partidos parecidos ese resultado ocurre unas 6 de cada 10 veces."
+    )
     first, second = st.columns(2)
     team_a = first.selectbox("Seleccion A", all_default_teams, index=0, format_func=team_label)
     team_b = second.selectbox("Seleccion B", all_default_teams, index=1, format_func=team_label)
@@ -1331,16 +1335,21 @@ except ValueError as error:
         st.error(str(error))
 
 overrides = st.session_state.get("overrides", {})
-simulation = run_tournament_simulation(
-    simulator,
-    edited_groups,
-    dict(overrides),
-    int(runs),
-    int(seed),
-    active_tournament_state is not None,
-    state_version,
-    active_tournament_state,
-) if groups_valid else None
+if groups_valid:
+    runs_label = f"{int(runs):,}".replace(",", ".")
+    with st.spinner(f"Simulando {runs_label} torneos..."):
+        simulation = run_tournament_simulation(
+            simulator,
+            edited_groups,
+            dict(overrides),
+            int(runs),
+            int(seed),
+            active_tournament_state is not None,
+            state_version,
+            active_tournament_state,
+        )
+else:
+    simulation = None
 
 with groups_tab:
     st.header("Fase de grupos")
