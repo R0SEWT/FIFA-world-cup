@@ -1410,6 +1410,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "scikit-learn" },
     { name = "streamlit" },
+    { name = "tensorflow" },
 ]
 
 [package.optional-dependencies]
@@ -1451,6 +1452,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = "==9.0.2" },
     { name = "scikit-learn", specifier = "==1.7.2" },
     { name = "streamlit", specifier = "==1.52.2" },
+    { name = "tensorflow", specifier = "==2.21.0" },
     { name = "tensorflow", marker = "extra == 'notebook'", specifier = "==2.21.0" },
     { name = "tensorflow", extras = ["and-cuda"], marker = "extra == 'gpu'", specifier = "==2.21.0" },
 ]

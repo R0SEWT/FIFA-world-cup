@@ -15,6 +15,7 @@ dependencies = [
     "pyarrow==22.0.0",
     "scikit-learn==1.7.2",
     "streamlit==1.52.2",
+    "tensorflow==2.21.0",
 ]
 
 [project.optional-dependencies]
