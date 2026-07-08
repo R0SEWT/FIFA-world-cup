@@ -1082,7 +1082,19 @@ def render_data_section() -> None:
             "Que se hizo": "Se normalizaron precios Yes, liquidez y spread; se usan como opinion de mercado cuando pasan filtros.",
         },
     ]
-    st.dataframe(pd.DataFrame(data_rows), hide_index=True, width="stretch")
+    st.dataframe(
+        pd.DataFrame(data_rows),
+        hide_index=True,
+        width="stretch",
+        height=560,
+        row_height=84,
+        column_config={
+            "Fuente": st.column_config.TextColumn(width="small"),
+            "Procedencia": st.column_config.TextColumn(width="medium"),
+            "Cobertura": st.column_config.TextColumn(width="small"),
+            "Que se hizo": st.column_config.TextColumn(width="large"),
+        },
+    )
 
     left, right = st.columns([1, 1])
     with left:
