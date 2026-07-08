@@ -401,6 +401,33 @@ def resources(state_version: int):
     return predictor, TournamentSimulator(predictor), mode
 
 
+@st.cache_data(show_spinner="Simulando el torneo...")
+def run_tournament_simulation(
+    _simulator,
+    groups: dict[str, list[str]],
+    overrides: dict[str, str],
+    runs: int,
+    seed: int,
+    use_official_state: bool,
+    state_version: int,
+    _tournament_state,
+):
+    """Cachea el Monte Carlo para no recomputarlo en cada rerun.
+
+    `_simulator` y `_tournament_state` se excluyen del hash por el prefijo `_`;
+    `state_version` y `use_official_state` capturan cualquier cambio del estado
+    oficial, de modo que la caché solo se invalida cuando cambian los grupos,
+    los overrides, las corridas, la semilla o el estado aprobado.
+    """
+    return _simulator.simulate(
+        groups,
+        overrides=overrides,
+        runs=runs,
+        seed=seed,
+        tournament_state=_tournament_state if use_official_state else None,
+    )
+
+
 def groups_from_editor(default_groups: dict[str, list[str]], *, disabled: bool = False) -> dict[str, list[str]]:
     all_teams = [team for group in GROUPS for team in default_groups[group]]
     edited: dict[str, list[str]] = {}
@@ -1280,9 +1307,14 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    runs = st.select_slider(
-        "Simulaciones", options=[100, 250, 500, 1_000, 2_000, 10_000, 20_000], value=2_000
-    )
+    # El tier gratis de Streamlit Cloud tiene CPU/RAM limitados; 10k/20k con
+    # incertidumbre posterior puede colgar o agotar memoria en una demo. Se
+    # capa a 2.000 por defecto y se exponen las opciones pesadas solo cuando
+    # MUNDIAL_UNLOCK_HEAVY_RUNS=1 (local con recursos suficientes).
+    run_options = [100, 250, 500, 1_000, 2_000]
+    if os.environ.get("MUNDIAL_UNLOCK_HEAVY_RUNS") == "1":
+        run_options += [10_000, 20_000]
+    runs = st.select_slider("Simulaciones", options=run_options, value=2_000)
     seed = st.number_input("Semilla", min_value=1, value=2026, step=1)
 
 with bracket_tab:
@@ -1307,8 +1339,15 @@ except ValueError as error:
         st.error(str(error))
 
 overrides = st.session_state.get("overrides", {})
-simulation = simulator.simulate(
-    edited_groups, overrides=overrides, runs=int(runs), seed=int(seed), tournament_state=active_tournament_state
+simulation = run_tournament_simulation(
+    simulator,
+    edited_groups,
+    dict(overrides),
+    int(runs),
+    int(seed),
+    active_tournament_state is not None,
+    state_version,
+    active_tournament_state,
 ) if groups_valid else None
 
 with groups_tab:
