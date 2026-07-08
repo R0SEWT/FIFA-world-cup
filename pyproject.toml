@@ -6,7 +6,37 @@ build-backend = "setuptools.build_meta"
 name = "mundial-2026-ai"
 version = "0.1.0"
 description = "Sistema de prediccion y simulacion de la Copa Mundial FIFA 2026"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "joblib==1.5.2",
+    "numpy==2.2.6",
+    "pandas==2.3.3",
+    "plotly==6.5.0",
+    "pyarrow==22.0.0",
+    "scikit-learn==1.7.2",
+    "streamlit==1.52.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.2",
+]
+notebook = [
+    "ipykernel==7.1.0",
+    "jupyterlab==4.5.1",
+    "matplotlib==3.10.8",
+    "nbconvert==7.16.6",
+    "pymc==6.0.1",
+    "tensorflow==2.21.0",
+]
+data = [
+    "kaggle==1.7.4.5",
+    "kagglehub==1.0.2",
+    "PyPDF2==3.0.1",
+]
+gpu = [
+    "tensorflow[and-cuda]==2.21.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -14,4 +44,3 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-

@@ -1,0 +1,1878 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-08T06:40:48Z",
+  "approved_at": "2026-07-08T06:40:48Z",
+  "source": {
+    "name": "FIFA",
+    "url": "https://api.fifa.com/api/v3/calendar/matches?language=en&count=200&idCompetition=17&idSeason=285023",
+    "updated_at": null
+  },
+  "stale": false,
+  "update_error": null,
+  "matches": {
+    "M1": {
+      "match_id": "M1",
+      "phase": "group",
+      "kickoff": "2026-06-11T19:00:00Z",
+      "status": "finished",
+      "team_a": "Mexico",
+      "team_b": "South Africa",
+      "group": "A",
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Mexico",
+      "source_a": null,
+      "source_b": null
+    },
+    "M2": {
+      "match_id": "M2",
+      "phase": "group",
+      "kickoff": "2026-06-12T02:00:00Z",
+      "status": "finished",
+      "team_a": "Korea Republic",
+      "team_b": "Czechia",
+      "group": "A",
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Korea Republic",
+      "source_a": null,
+      "source_b": null
+    },
+    "M3": {
+      "match_id": "M3",
+      "phase": "group",
+      "kickoff": "2026-06-12T19:00:00Z",
+      "status": "finished",
+      "team_a": "Canada",
+      "team_b": "Bosnia and Herzegovina",
+      "group": "B",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M4": {
+      "match_id": "M4",
+      "phase": "group",
+      "kickoff": "2026-06-13T01:00:00Z",
+      "status": "finished",
+      "team_a": "United States",
+      "team_b": "Paraguay",
+      "group": "D",
+      "score_90": [
+        4,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "United States",
+      "source_a": null,
+      "source_b": null
+    },
+    "M5": {
+      "match_id": "M5",
+      "phase": "group",
+      "kickoff": "2026-06-14T01:00:00Z",
+      "status": "finished",
+      "team_a": "Haiti",
+      "team_b": "Scotland",
+      "group": "C",
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Scotland",
+      "source_a": null,
+      "source_b": null
+    },
+    "M6": {
+      "match_id": "M6",
+      "phase": "group",
+      "kickoff": "2026-06-14T04:00:00Z",
+      "status": "finished",
+      "team_a": "Australia",
+      "team_b": "Türkiye",
+      "group": "D",
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Australia",
+      "source_a": null,
+      "source_b": null
+    },
+    "M7": {
+      "match_id": "M7",
+      "phase": "group",
+      "kickoff": "2026-06-13T22:00:00Z",
+      "status": "finished",
+      "team_a": "Brazil",
+      "team_b": "Morocco",
+      "group": "C",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M8": {
+      "match_id": "M8",
+      "phase": "group",
+      "kickoff": "2026-06-13T19:00:00Z",
+      "status": "finished",
+      "team_a": "Qatar",
+      "team_b": "Switzerland",
+      "group": "B",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M9": {
+      "match_id": "M9",
+      "phase": "group",
+      "kickoff": "2026-06-14T23:00:00Z",
+      "status": "finished",
+      "team_a": "Côte d'Ivoire",
+      "team_b": "Ecuador",
+      "group": "E",
+      "score_90": [
+        1,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Côte d'Ivoire",
+      "source_a": null,
+      "source_b": null
+    },
+    "M10": {
+      "match_id": "M10",
+      "phase": "group",
+      "kickoff": "2026-06-14T17:00:00Z",
+      "status": "finished",
+      "team_a": "Germany",
+      "team_b": "Curaçao",
+      "group": "E",
+      "score_90": [
+        7,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Germany",
+      "source_a": null,
+      "source_b": null
+    },
+    "M11": {
+      "match_id": "M11",
+      "phase": "group",
+      "kickoff": "2026-06-14T20:00:00Z",
+      "status": "finished",
+      "team_a": "Netherlands",
+      "team_b": "Japan",
+      "group": "F",
+      "score_90": [
+        2,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M12": {
+      "match_id": "M12",
+      "phase": "group",
+      "kickoff": "2026-06-15T02:00:00Z",
+      "status": "finished",
+      "team_a": "Sweden",
+      "team_b": "Tunisia",
+      "group": "F",
+      "score_90": [
+        5,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Sweden",
+      "source_a": null,
+      "source_b": null
+    },
+    "M13": {
+      "match_id": "M13",
+      "phase": "group",
+      "kickoff": "2026-06-15T22:00:00Z",
+      "status": "finished",
+      "team_a": "Saudi Arabia",
+      "team_b": "Uruguay",
+      "group": "H",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M14": {
+      "match_id": "M14",
+      "phase": "group",
+      "kickoff": "2026-06-15T16:00:00Z",
+      "status": "finished",
+      "team_a": "Spain",
+      "team_b": "Cabo Verde",
+      "group": "H",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M15": {
+      "match_id": "M15",
+      "phase": "group",
+      "kickoff": "2026-06-16T01:00:00Z",
+      "status": "finished",
+      "team_a": "Iran",
+      "team_b": "New Zealand",
+      "group": "G",
+      "score_90": [
+        2,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M16": {
+      "match_id": "M16",
+      "phase": "group",
+      "kickoff": "2026-06-15T19:00:00Z",
+      "status": "finished",
+      "team_a": "Belgium",
+      "team_b": "Egypt",
+      "group": "G",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M17": {
+      "match_id": "M17",
+      "phase": "group",
+      "kickoff": "2026-06-16T19:00:00Z",
+      "status": "finished",
+      "team_a": "France",
+      "team_b": "Senegal",
+      "group": "I",
+      "score_90": [
+        3,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "France",
+      "source_a": null,
+      "source_b": null
+    },
+    "M18": {
+      "match_id": "M18",
+      "phase": "group",
+      "kickoff": "2026-06-16T22:00:00Z",
+      "status": "finished",
+      "team_a": "Iraq",
+      "team_b": "Norway",
+      "group": "I",
+      "score_90": [
+        1,
+        4
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Norway",
+      "source_a": null,
+      "source_b": null
+    },
+    "M19": {
+      "match_id": "M19",
+      "phase": "group",
+      "kickoff": "2026-06-17T01:00:00Z",
+      "status": "finished",
+      "team_a": "Argentina",
+      "team_b": "Algeria",
+      "group": "J",
+      "score_90": [
+        3,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Argentina",
+      "source_a": null,
+      "source_b": null
+    },
+    "M20": {
+      "match_id": "M20",
+      "phase": "group",
+      "kickoff": "2026-06-17T04:00:00Z",
+      "status": "finished",
+      "team_a": "Austria",
+      "team_b": "Jordan",
+      "group": "J",
+      "score_90": [
+        3,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Austria",
+      "source_a": null,
+      "source_b": null
+    },
+    "M21": {
+      "match_id": "M21",
+      "phase": "group",
+      "kickoff": "2026-06-17T23:00:00Z",
+      "status": "finished",
+      "team_a": "Ghana",
+      "team_b": "Panama",
+      "group": "L",
+      "score_90": [
+        1,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Ghana",
+      "source_a": null,
+      "source_b": null
+    },
+    "M22": {
+      "match_id": "M22",
+      "phase": "group",
+      "kickoff": "2026-06-17T20:00:00Z",
+      "status": "finished",
+      "team_a": "England",
+      "team_b": "Croatia",
+      "group": "L",
+      "score_90": [
+        4,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "England",
+      "source_a": null,
+      "source_b": null
+    },
+    "M23": {
+      "match_id": "M23",
+      "phase": "group",
+      "kickoff": "2026-06-17T17:00:00Z",
+      "status": "finished",
+      "team_a": "Portugal",
+      "team_b": "Congo DR",
+      "group": "K",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M24": {
+      "match_id": "M24",
+      "phase": "group",
+      "kickoff": "2026-06-18T02:00:00Z",
+      "status": "finished",
+      "team_a": "Uzbekistan",
+      "team_b": "Colombia",
+      "group": "K",
+      "score_90": [
+        1,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Colombia",
+      "source_a": null,
+      "source_b": null
+    },
+    "M25": {
+      "match_id": "M25",
+      "phase": "group",
+      "kickoff": "2026-06-18T16:00:00Z",
+      "status": "finished",
+      "team_a": "Czechia",
+      "team_b": "South Africa",
+      "group": "A",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M26": {
+      "match_id": "M26",
+      "phase": "group",
+      "kickoff": "2026-06-18T19:00:00Z",
+      "status": "finished",
+      "team_a": "Switzerland",
+      "team_b": "Bosnia and Herzegovina",
+      "group": "B",
+      "score_90": [
+        4,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Switzerland",
+      "source_a": null,
+      "source_b": null
+    },
+    "M27": {
+      "match_id": "M27",
+      "phase": "group",
+      "kickoff": "2026-06-18T22:00:00Z",
+      "status": "finished",
+      "team_a": "Canada",
+      "team_b": "Qatar",
+      "group": "B",
+      "score_90": [
+        6,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Canada",
+      "source_a": null,
+      "source_b": null
+    },
+    "M28": {
+      "match_id": "M28",
+      "phase": "group",
+      "kickoff": "2026-06-19T01:00:00Z",
+      "status": "finished",
+      "team_a": "Mexico",
+      "team_b": "Korea Republic",
+      "group": "A",
+      "score_90": [
+        1,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Mexico",
+      "source_a": null,
+      "source_b": null
+    },
+    "M29": {
+      "match_id": "M29",
+      "phase": "group",
+      "kickoff": "2026-06-20T00:30:00Z",
+      "status": "finished",
+      "team_a": "Brazil",
+      "team_b": "Haiti",
+      "group": "C",
+      "score_90": [
+        3,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Brazil",
+      "source_a": null,
+      "source_b": null
+    },
+    "M30": {
+      "match_id": "M30",
+      "phase": "group",
+      "kickoff": "2026-06-19T22:00:00Z",
+      "status": "finished",
+      "team_a": "Scotland",
+      "team_b": "Morocco",
+      "group": "C",
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Morocco",
+      "source_a": null,
+      "source_b": null
+    },
+    "M31": {
+      "match_id": "M31",
+      "phase": "group",
+      "kickoff": "2026-06-20T03:00:00Z",
+      "status": "finished",
+      "team_a": "Türkiye",
+      "team_b": "Paraguay",
+      "group": "D",
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Paraguay",
+      "source_a": null,
+      "source_b": null
+    },
+    "M32": {
+      "match_id": "M32",
+      "phase": "group",
+      "kickoff": "2026-06-19T19:00:00Z",
+      "status": "finished",
+      "team_a": "United States",
+      "team_b": "Australia",
+      "group": "D",
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "United States",
+      "source_a": null,
+      "source_b": null
+    },
+    "M33": {
+      "match_id": "M33",
+      "phase": "group",
+      "kickoff": "2026-06-20T20:00:00Z",
+      "status": "finished",
+      "team_a": "Germany",
+      "team_b": "Côte d'Ivoire",
+      "group": "E",
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Germany",
+      "source_a": null,
+      "source_b": null
+    },
+    "M34": {
+      "match_id": "M34",
+      "phase": "group",
+      "kickoff": "2026-06-21T00:00:00Z",
+      "status": "finished",
+      "team_a": "Ecuador",
+      "team_b": "Curaçao",
+      "group": "E",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M35": {
+      "match_id": "M35",
+      "phase": "group",
+      "kickoff": "2026-06-20T17:00:00Z",
+      "status": "finished",
+      "team_a": "Netherlands",
+      "team_b": "Sweden",
+      "group": "F",
+      "score_90": [
+        5,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Netherlands",
+      "source_a": null,
+      "source_b": null
+    },
+    "M36": {
+      "match_id": "M36",
+      "phase": "group",
+      "kickoff": "2026-06-21T04:00:00Z",
+      "status": "finished",
+      "team_a": "Tunisia",
+      "team_b": "Japan",
+      "group": "F",
+      "score_90": [
+        0,
+        4
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Japan",
+      "source_a": null,
+      "source_b": null
+    },
+    "M37": {
+      "match_id": "M37",
+      "phase": "group",
+      "kickoff": "2026-06-21T22:00:00Z",
+      "status": "finished",
+      "team_a": "Uruguay",
+      "team_b": "Cabo Verde",
+      "group": "H",
+      "score_90": [
+        2,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M38": {
+      "match_id": "M38",
+      "phase": "group",
+      "kickoff": "2026-06-21T16:00:00Z",
+      "status": "finished",
+      "team_a": "Spain",
+      "team_b": "Saudi Arabia",
+      "group": "H",
+      "score_90": [
+        4,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Spain",
+      "source_a": null,
+      "source_b": null
+    },
+    "M39": {
+      "match_id": "M39",
+      "phase": "group",
+      "kickoff": "2026-06-21T19:00:00Z",
+      "status": "finished",
+      "team_a": "Belgium",
+      "team_b": "Iran",
+      "group": "G",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M40": {
+      "match_id": "M40",
+      "phase": "group",
+      "kickoff": "2026-06-22T01:00:00Z",
+      "status": "finished",
+      "team_a": "New Zealand",
+      "team_b": "Egypt",
+      "group": "G",
+      "score_90": [
+        1,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Egypt",
+      "source_a": null,
+      "source_b": null
+    },
+    "M41": {
+      "match_id": "M41",
+      "phase": "group",
+      "kickoff": "2026-06-23T00:00:00Z",
+      "status": "finished",
+      "team_a": "Norway",
+      "team_b": "Senegal",
+      "group": "I",
+      "score_90": [
+        3,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Norway",
+      "source_a": null,
+      "source_b": null
+    },
+    "M42": {
+      "match_id": "M42",
+      "phase": "group",
+      "kickoff": "2026-06-22T21:00:00Z",
+      "status": "finished",
+      "team_a": "France",
+      "team_b": "Iraq",
+      "group": "I",
+      "score_90": [
+        3,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "France",
+      "source_a": null,
+      "source_b": null
+    },
+    "M43": {
+      "match_id": "M43",
+      "phase": "group",
+      "kickoff": "2026-06-22T17:00:00Z",
+      "status": "finished",
+      "team_a": "Argentina",
+      "team_b": "Austria",
+      "group": "J",
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Argentina",
+      "source_a": null,
+      "source_b": null
+    },
+    "M44": {
+      "match_id": "M44",
+      "phase": "group",
+      "kickoff": "2026-06-23T03:00:00Z",
+      "status": "finished",
+      "team_a": "Jordan",
+      "team_b": "Algeria",
+      "group": "J",
+      "score_90": [
+        1,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Algeria",
+      "source_a": null,
+      "source_b": null
+    },
+    "M45": {
+      "match_id": "M45",
+      "phase": "group",
+      "kickoff": "2026-06-23T20:00:00Z",
+      "status": "finished",
+      "team_a": "England",
+      "team_b": "Ghana",
+      "group": "L",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M46": {
+      "match_id": "M46",
+      "phase": "group",
+      "kickoff": "2026-06-23T23:00:00Z",
+      "status": "finished",
+      "team_a": "Panama",
+      "team_b": "Croatia",
+      "group": "L",
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Croatia",
+      "source_a": null,
+      "source_b": null
+    },
+    "M47": {
+      "match_id": "M47",
+      "phase": "group",
+      "kickoff": "2026-06-23T17:00:00Z",
+      "status": "finished",
+      "team_a": "Portugal",
+      "team_b": "Uzbekistan",
+      "group": "K",
+      "score_90": [
+        5,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Portugal",
+      "source_a": null,
+      "source_b": null
+    },
+    "M48": {
+      "match_id": "M48",
+      "phase": "group",
+      "kickoff": "2026-06-24T02:00:00Z",
+      "status": "finished",
+      "team_a": "Colombia",
+      "team_b": "Congo DR",
+      "group": "K",
+      "score_90": [
+        1,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Colombia",
+      "source_a": null,
+      "source_b": null
+    },
+    "M49": {
+      "match_id": "M49",
+      "phase": "group",
+      "kickoff": "2026-06-24T22:00:00Z",
+      "status": "finished",
+      "team_a": "Scotland",
+      "team_b": "Brazil",
+      "group": "C",
+      "score_90": [
+        0,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Brazil",
+      "source_a": null,
+      "source_b": null
+    },
+    "M50": {
+      "match_id": "M50",
+      "phase": "group",
+      "kickoff": "2026-06-24T22:00:00Z",
+      "status": "finished",
+      "team_a": "Morocco",
+      "team_b": "Haiti",
+      "group": "C",
+      "score_90": [
+        4,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Morocco",
+      "source_a": null,
+      "source_b": null
+    },
+    "M51": {
+      "match_id": "M51",
+      "phase": "group",
+      "kickoff": "2026-06-24T19:00:00Z",
+      "status": "finished",
+      "team_a": "Switzerland",
+      "team_b": "Canada",
+      "group": "B",
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Switzerland",
+      "source_a": null,
+      "source_b": null
+    },
+    "M52": {
+      "match_id": "M52",
+      "phase": "group",
+      "kickoff": "2026-06-24T19:00:00Z",
+      "status": "finished",
+      "team_a": "Bosnia and Herzegovina",
+      "team_b": "Qatar",
+      "group": "B",
+      "score_90": [
+        3,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Bosnia and Herzegovina",
+      "source_a": null,
+      "source_b": null
+    },
+    "M53": {
+      "match_id": "M53",
+      "phase": "group",
+      "kickoff": "2026-06-25T01:00:00Z",
+      "status": "finished",
+      "team_a": "Czechia",
+      "team_b": "Mexico",
+      "group": "A",
+      "score_90": [
+        0,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Mexico",
+      "source_a": null,
+      "source_b": null
+    },
+    "M54": {
+      "match_id": "M54",
+      "phase": "group",
+      "kickoff": "2026-06-25T01:00:00Z",
+      "status": "finished",
+      "team_a": "South Africa",
+      "team_b": "Korea Republic",
+      "group": "A",
+      "score_90": [
+        1,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "South Africa",
+      "source_a": null,
+      "source_b": null
+    },
+    "M55": {
+      "match_id": "M55",
+      "phase": "group",
+      "kickoff": "2026-06-25T20:00:00Z",
+      "status": "finished",
+      "team_a": "Curaçao",
+      "team_b": "Côte d'Ivoire",
+      "group": "E",
+      "score_90": [
+        0,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Côte d'Ivoire",
+      "source_a": null,
+      "source_b": null
+    },
+    "M56": {
+      "match_id": "M56",
+      "phase": "group",
+      "kickoff": "2026-06-25T20:00:00Z",
+      "status": "finished",
+      "team_a": "Ecuador",
+      "team_b": "Germany",
+      "group": "E",
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Ecuador",
+      "source_a": null,
+      "source_b": null
+    },
+    "M57": {
+      "match_id": "M57",
+      "phase": "group",
+      "kickoff": "2026-06-25T23:00:00Z",
+      "status": "finished",
+      "team_a": "Japan",
+      "team_b": "Sweden",
+      "group": "F",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M58": {
+      "match_id": "M58",
+      "phase": "group",
+      "kickoff": "2026-06-25T23:00:00Z",
+      "status": "finished",
+      "team_a": "Tunisia",
+      "team_b": "Netherlands",
+      "group": "F",
+      "score_90": [
+        1,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Netherlands",
+      "source_a": null,
+      "source_b": null
+    },
+    "M59": {
+      "match_id": "M59",
+      "phase": "group",
+      "kickoff": "2026-06-26T02:00:00Z",
+      "status": "finished",
+      "team_a": "Türkiye",
+      "team_b": "United States",
+      "group": "D",
+      "score_90": [
+        3,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Türkiye",
+      "source_a": null,
+      "source_b": null
+    },
+    "M60": {
+      "match_id": "M60",
+      "phase": "group",
+      "kickoff": "2026-06-26T02:00:00Z",
+      "status": "finished",
+      "team_a": "Paraguay",
+      "team_b": "Australia",
+      "group": "D",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M61": {
+      "match_id": "M61",
+      "phase": "group",
+      "kickoff": "2026-06-26T19:00:00Z",
+      "status": "finished",
+      "team_a": "Norway",
+      "team_b": "France",
+      "group": "I",
+      "score_90": [
+        1,
+        4
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "France",
+      "source_a": null,
+      "source_b": null
+    },
+    "M62": {
+      "match_id": "M62",
+      "phase": "group",
+      "kickoff": "2026-06-26T19:00:00Z",
+      "status": "finished",
+      "team_a": "Senegal",
+      "team_b": "Iraq",
+      "group": "I",
+      "score_90": [
+        5,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Senegal",
+      "source_a": null,
+      "source_b": null
+    },
+    "M63": {
+      "match_id": "M63",
+      "phase": "group",
+      "kickoff": "2026-06-27T03:00:00Z",
+      "status": "finished",
+      "team_a": "Egypt",
+      "team_b": "Iran",
+      "group": "G",
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M64": {
+      "match_id": "M64",
+      "phase": "group",
+      "kickoff": "2026-06-27T03:00:00Z",
+      "status": "finished",
+      "team_a": "New Zealand",
+      "team_b": "Belgium",
+      "group": "G",
+      "score_90": [
+        1,
+        5
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Belgium",
+      "source_a": null,
+      "source_b": null
+    },
+    "M65": {
+      "match_id": "M65",
+      "phase": "group",
+      "kickoff": "2026-06-27T00:00:00Z",
+      "status": "finished",
+      "team_a": "Cabo Verde",
+      "team_b": "Saudi Arabia",
+      "group": "H",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M66": {
+      "match_id": "M66",
+      "phase": "group",
+      "kickoff": "2026-06-27T00:00:00Z",
+      "status": "finished",
+      "team_a": "Uruguay",
+      "team_b": "Spain",
+      "group": "H",
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Spain",
+      "source_a": null,
+      "source_b": null
+    },
+    "M67": {
+      "match_id": "M67",
+      "phase": "group",
+      "kickoff": "2026-06-27T21:00:00Z",
+      "status": "finished",
+      "team_a": "Panama",
+      "team_b": "England",
+      "group": "L",
+      "score_90": [
+        0,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "England",
+      "source_a": null,
+      "source_b": null
+    },
+    "M68": {
+      "match_id": "M68",
+      "phase": "group",
+      "kickoff": "2026-06-27T21:00:00Z",
+      "status": "finished",
+      "team_a": "Croatia",
+      "team_b": "Ghana",
+      "group": "L",
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Croatia",
+      "source_a": null,
+      "source_b": null
+    },
+    "M69": {
+      "match_id": "M69",
+      "phase": "group",
+      "kickoff": "2026-06-28T02:00:00Z",
+      "status": "finished",
+      "team_a": "Algeria",
+      "team_b": "Austria",
+      "group": "J",
+      "score_90": [
+        3,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M70": {
+      "match_id": "M70",
+      "phase": "group",
+      "kickoff": "2026-06-28T02:00:00Z",
+      "status": "finished",
+      "team_a": "Jordan",
+      "team_b": "Argentina",
+      "group": "J",
+      "score_90": [
+        1,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Argentina",
+      "source_a": null,
+      "source_b": null
+    },
+    "M71": {
+      "match_id": "M71",
+      "phase": "group",
+      "kickoff": "2026-06-27T23:30:00Z",
+      "status": "finished",
+      "team_a": "Colombia",
+      "team_b": "Portugal",
+      "group": "K",
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M72": {
+      "match_id": "M72",
+      "phase": "group",
+      "kickoff": "2026-06-27T23:30:00Z",
+      "status": "finished",
+      "team_a": "Congo DR",
+      "team_b": "Uzbekistan",
+      "group": "K",
+      "score_90": [
+        3,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Congo DR",
+      "source_a": null,
+      "source_b": null
+    },
+    "M73": {
+      "match_id": "M73",
+      "phase": "round_of_32",
+      "kickoff": "2026-06-28T19:00:00Z",
+      "status": "finished",
+      "team_a": "South Africa",
+      "team_b": "Canada",
+      "group": null,
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Canada",
+      "source_a": null,
+      "source_b": null
+    },
+    "M74": {
+      "match_id": "M74",
+      "phase": "round_of_32",
+      "kickoff": "2026-06-29T20:30:00Z",
+      "status": "finished",
+      "team_a": "Germany",
+      "team_b": "Paraguay",
+      "group": null,
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": [
+        3,
+        4
+      ],
+      "winner": "Paraguay",
+      "source_a": null,
+      "source_b": null
+    },
+    "M75": {
+      "match_id": "M75",
+      "phase": "round_of_32",
+      "kickoff": "2026-06-30T01:00:00Z",
+      "status": "finished",
+      "team_a": "Netherlands",
+      "team_b": "Morocco",
+      "group": null,
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": [
+        2,
+        3
+      ],
+      "winner": "Morocco",
+      "source_a": null,
+      "source_b": null
+    },
+    "M76": {
+      "match_id": "M76",
+      "phase": "round_of_32",
+      "kickoff": "2026-06-29T17:00:00Z",
+      "status": "finished",
+      "team_a": "Brazil",
+      "team_b": "Japan",
+      "group": null,
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Brazil",
+      "source_a": null,
+      "source_b": null
+    },
+    "M77": {
+      "match_id": "M77",
+      "phase": "round_of_32",
+      "kickoff": "2026-06-30T21:00:00Z",
+      "status": "finished",
+      "team_a": "France",
+      "team_b": "Sweden",
+      "group": null,
+      "score_90": [
+        3,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "France",
+      "source_a": null,
+      "source_b": null
+    },
+    "M78": {
+      "match_id": "M78",
+      "phase": "round_of_32",
+      "kickoff": "2026-06-30T17:00:00Z",
+      "status": "finished",
+      "team_a": "Côte d'Ivoire",
+      "team_b": "Norway",
+      "group": null,
+      "score_90": [
+        1,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Norway",
+      "source_a": null,
+      "source_b": null
+    },
+    "M79": {
+      "match_id": "M79",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-01T02:00:00Z",
+      "status": "finished",
+      "team_a": "Mexico",
+      "team_b": "Ecuador",
+      "group": null,
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Mexico",
+      "source_a": null,
+      "source_b": null
+    },
+    "M80": {
+      "match_id": "M80",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-01T16:00:00Z",
+      "status": "finished",
+      "team_a": "England",
+      "team_b": "Congo DR",
+      "group": null,
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "England",
+      "source_a": null,
+      "source_b": null
+    },
+    "M81": {
+      "match_id": "M81",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-02T00:00:00Z",
+      "status": "finished",
+      "team_a": "United States",
+      "team_b": "Bosnia and Herzegovina",
+      "group": null,
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "United States",
+      "source_a": null,
+      "source_b": null
+    },
+    "M82": {
+      "match_id": "M82",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-01T20:00:00Z",
+      "status": "finished",
+      "team_a": "Belgium",
+      "team_b": "Senegal",
+      "group": null,
+      "score_90": [
+        3,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Belgium",
+      "source_a": null,
+      "source_b": null
+    },
+    "M83": {
+      "match_id": "M83",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-02T23:00:00Z",
+      "status": "finished",
+      "team_a": "Portugal",
+      "team_b": "Croatia",
+      "group": null,
+      "score_90": [
+        2,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Portugal",
+      "source_a": null,
+      "source_b": null
+    },
+    "M84": {
+      "match_id": "M84",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-02T19:00:00Z",
+      "status": "finished",
+      "team_a": "Spain",
+      "team_b": "Austria",
+      "group": null,
+      "score_90": [
+        3,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Spain",
+      "source_a": null,
+      "source_b": null
+    },
+    "M85": {
+      "match_id": "M85",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-03T03:00:00Z",
+      "status": "finished",
+      "team_a": "Switzerland",
+      "team_b": "Algeria",
+      "group": null,
+      "score_90": [
+        2,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Switzerland",
+      "source_a": null,
+      "source_b": null
+    },
+    "M86": {
+      "match_id": "M86",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-03T22:00:00Z",
+      "status": "finished",
+      "team_a": "Argentina",
+      "team_b": "Cabo Verde",
+      "group": null,
+      "score_90": [
+        3,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Argentina",
+      "source_a": null,
+      "source_b": null
+    },
+    "M87": {
+      "match_id": "M87",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-04T01:30:00Z",
+      "status": "finished",
+      "team_a": "Colombia",
+      "team_b": "Ghana",
+      "group": null,
+      "score_90": [
+        1,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Colombia",
+      "source_a": null,
+      "source_b": null
+    },
+    "M88": {
+      "match_id": "M88",
+      "phase": "round_of_32",
+      "kickoff": "2026-07-03T18:00:00Z",
+      "status": "finished",
+      "team_a": "Australia",
+      "team_b": "Egypt",
+      "group": null,
+      "score_90": [
+        1,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": [
+        2,
+        4
+      ],
+      "winner": "Egypt",
+      "source_a": null,
+      "source_b": null
+    },
+    "M89": {
+      "match_id": "M89",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-04T21:00:00Z",
+      "status": "finished",
+      "team_a": "Paraguay",
+      "team_b": "France",
+      "group": null,
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "France",
+      "source_a": null,
+      "source_b": null
+    },
+    "M90": {
+      "match_id": "M90",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-04T17:00:00Z",
+      "status": "finished",
+      "team_a": "Canada",
+      "team_b": "Morocco",
+      "group": null,
+      "score_90": [
+        0,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Morocco",
+      "source_a": null,
+      "source_b": null
+    },
+    "M91": {
+      "match_id": "M91",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-05T20:00:00Z",
+      "status": "finished",
+      "team_a": "Brazil",
+      "team_b": "Norway",
+      "group": null,
+      "score_90": [
+        1,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Norway",
+      "source_a": null,
+      "source_b": null
+    },
+    "M92": {
+      "match_id": "M92",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-06T01:00:00Z",
+      "status": "finished",
+      "team_a": "Mexico",
+      "team_b": "England",
+      "group": null,
+      "score_90": [
+        2,
+        3
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "England",
+      "source_a": null,
+      "source_b": null
+    },
+    "M93": {
+      "match_id": "M93",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-06T19:00:00Z",
+      "status": "finished",
+      "team_a": "Portugal",
+      "team_b": "Spain",
+      "group": null,
+      "score_90": [
+        0,
+        1
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Spain",
+      "source_a": null,
+      "source_b": null
+    },
+    "M94": {
+      "match_id": "M94",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-07T00:00:00Z",
+      "status": "finished",
+      "team_a": "United States",
+      "team_b": "Belgium",
+      "group": null,
+      "score_90": [
+        1,
+        4
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Belgium",
+      "source_a": null,
+      "source_b": null
+    },
+    "M95": {
+      "match_id": "M95",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-07T16:00:00Z",
+      "status": "finished",
+      "team_a": "Argentina",
+      "team_b": "Egypt",
+      "group": null,
+      "score_90": [
+        3,
+        2
+      ],
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": "Argentina",
+      "source_a": null,
+      "source_b": null
+    },
+    "M96": {
+      "match_id": "M96",
+      "phase": "round_of_16",
+      "kickoff": "2026-07-07T20:00:00Z",
+      "status": "finished",
+      "team_a": "Switzerland",
+      "team_b": "Colombia",
+      "group": null,
+      "score_90": [
+        0,
+        0
+      ],
+      "score_extra_time": null,
+      "penalties": [
+        4,
+        3
+      ],
+      "winner": "Switzerland",
+      "source_a": null,
+      "source_b": null
+    },
+    "M97": {
+      "match_id": "M97",
+      "phase": "quarter_final",
+      "kickoff": "2026-07-09T20:00:00Z",
+      "status": "scheduled",
+      "team_a": "France",
+      "team_b": "Morocco",
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M98": {
+      "match_id": "M98",
+      "phase": "quarter_final",
+      "kickoff": "2026-07-10T19:00:00Z",
+      "status": "scheduled",
+      "team_a": "Spain",
+      "team_b": "Belgium",
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M99": {
+      "match_id": "M99",
+      "phase": "quarter_final",
+      "kickoff": "2026-07-11T21:00:00Z",
+      "status": "scheduled",
+      "team_a": "Norway",
+      "team_b": "England",
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M100": {
+      "match_id": "M100",
+      "phase": "quarter_final",
+      "kickoff": "2026-07-12T01:00:00Z",
+      "status": "scheduled",
+      "team_a": "Argentina",
+      "team_b": "Switzerland",
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M101": {
+      "match_id": "M101",
+      "phase": "semi_final",
+      "kickoff": "2026-07-14T19:00:00Z",
+      "status": "scheduled",
+      "team_a": null,
+      "team_b": null,
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M102": {
+      "match_id": "M102",
+      "phase": "semi_final",
+      "kickoff": "2026-07-15T19:00:00Z",
+      "status": "scheduled",
+      "team_a": null,
+      "team_b": null,
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M103": {
+      "match_id": "M103",
+      "phase": "third_place",
+      "kickoff": "2026-07-18T21:00:00Z",
+      "status": "scheduled",
+      "team_a": null,
+      "team_b": null,
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    },
+    "M104": {
+      "match_id": "M104",
+      "phase": "final",
+      "kickoff": "2026-07-19T19:00:00Z",
+      "status": "scheduled",
+      "team_a": null,
+      "team_b": null,
+      "group": null,
+      "score_90": null,
+      "score_extra_time": null,
+      "penalties": null,
+      "winner": null,
+      "source_a": null,
+      "source_b": null
+    }
+  },
+  "metadata": {
+    "provider_schema": "fifa_api_v3"
+  },
+  "hash": "2dd6fd856205f940ed1e7724171905ac6f1446278fe4af6b40669da4ac0c8c13"
+}

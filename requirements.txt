@@ -1,17 +1,10 @@
-PyPDF2==3.0.1
+# Manifest de despliegue para Streamlit Community Cloud (solo runtime del dashboard).
+# Para desarrollo local usar uv + pyproject.toml (extras: dev, notebook, data, gpu).
+joblib==1.5.2
 numpy==2.2.6
 pandas==2.3.3
-scikit-learn==1.7.2
-joblib==1.5.2
-tensorflow[and-cuda]==2.21.0
-streamlit==1.52.2
 plotly==6.5.0
-kaggle==1.7.4.5
-kagglehub==1.0.2
 pyarrow==22.0.0
-pytest==9.0.2
-pymc==6.0.1
-matplotlib==3.10.8
-jupyterlab==4.5.1
-nbconvert==7.16.6
-ipykernel==7.1.0
+scikit-learn==1.7.2
+streamlit==1.52.2
+tensorflow==2.21.0

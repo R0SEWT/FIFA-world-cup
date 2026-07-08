@@ -1,16 +1,26 @@
 .venv/
 __pycache__/
 .pytest_cache/
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
 *.py[cod]
 *.egg-info/
 .coverage
 htmlcov/
 data/raw/
 data/processed/
-artifacts/
+artifacts/*
 *.keras
 *.joblib
 .env
 kaggle.json
 
+# Artefactos v2 requeridos por el dashboard desplegado
+!artifacts/artifact_manifest.json
+!artifacts/selected_model.keras
+!artifacts/inference_bundle.joblib
+!artifacts/calibration_posterior.joblib
+!artifacts/dixon_coles_posterior.joblib
+!artifacts/metrics.json
+!artifacts/polymarket_snapshot.json
+!artifacts/tournament_state.json

@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "posterior_draws": 64,
+  "selected_model": "mlp_sgd",
+  "as_of_date": "2026-07-07",
+  "production_epochs": 19,
+  "phase": null,
+  "terminal_temporal_fold": null
+}

@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-07-08T06:40:50Z",
+  "tournament_state_hash": "2dd6fd856205f940ed1e7724171905ac6f1446278fe4af6b40669da4ac0c8c13",
+  "markets": [
+    {
+      "team_a": "France",
+      "team_b": "Morocco",
+      "prob_a": 0.6119402985074628,
+      "prob_draw": 0.2437810945273632,
+      "prob_b": 0.14427860696517417,
+      "total_liquidity": 13564221.0166,
+      "spread": 0.01,
+      "event_start": "2026-07-09T20:00:00Z",
+      "captured_at": "2026-07-08T06:40:50Z",
+      "slug": "fifwc-fra-mar-2026-07-09",
+      "condition_id": "0xc09537a0976d0927901432859fbb6dfe5d23d1d69bb4e8355253e7b142a44e83,0x8a3ca97b10cab04b078e5a8ff0f88c3d406c9468d766f194e3e062aa72a9b539,0x17e6ca6b83b4937b4cd575f2acbbefa194b3d52b62e8af192feae6f1c38da0c1"
+    },
+    {
+      "team_a": "Norway",
+      "team_b": "England",
+      "prob_a": 0.22167487684729062,
+      "prob_draw": 0.2610837438423645,
+      "prob_b": 0.5172413793103448,
+      "total_liquidity": 3952470.4769,
+      "spread": 0.01,
+      "event_start": "2026-07-11T21:00:00Z",
+      "captured_at": "2026-07-08T06:40:50Z",
+      "slug": "fifwc-nor-eng-2026-07-11",
+      "condition_id": "0x4b84a8e08cb3376c9e5be5cc5a37f7073de05cdf0810d2ad3fe745c4760ef3e0,0xdbbbbd6ea71cad296d859aa629497400402ab253a51350bddd5d761dbbad1460,0x0f5e01cf1cabb6c49e424f230ca77a2ccd3e1ac63b31ae03ef749ac2bde7fa0e"
+    },
+    {
+      "team_a": "Spain",
+      "team_b": "Belgium",
+      "prob_a": 0.5960591133004927,
+      "prob_draw": 0.2413793103448276,
+      "prob_b": 0.16256157635467983,
+      "total_liquidity": 4240819.92,
+      "spread": 0.01,
+      "event_start": "2026-07-10T19:00:00Z",
+      "captured_at": "2026-07-08T06:40:50Z",
+      "slug": "fifwc-esp-bel-2026-07-10",
+      "condition_id": "0x2c37e07b722442c2381fac76f8564d580660aa028066e08bad1b32bd11813e9d,0xb025924a635da63f0fe25da502ba1b006cbe2797166be54ad6634c1c9891a798,0x36fca44fa14ee80f732b8c07f060f5f7f0eda41a01626409d178166156b4d6d1"
+    }
+  ]
+}
