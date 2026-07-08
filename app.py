@@ -232,6 +232,68 @@ st.markdown(
         color: rgba(255, 255, 255, 0.82);
         font-size: 0.74rem;
     }
+    .pipe {
+        position: relative;
+        margin: 0.25rem 0 0.2rem;
+    }
+    .pipe-step {
+        position: relative;
+        display: flex;
+        gap: 0.75rem;
+        padding-bottom: 0.7rem;
+    }
+    .pipe-step:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        left: 16px;
+        top: 33px;
+        bottom: -1px;
+        width: 2px;
+        background: rgba(46, 196, 166, 0.35);
+    }
+    .pipe-badge {
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+        width: 33px;
+        height: 33px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        background: rgba(46, 196, 166, 0.16);
+        border: 1.5px solid rgba(46, 196, 166, 0.6);
+    }
+    .pipe-card {
+        flex: 1;
+        border: 1px solid rgba(46, 196, 166, 0.28);
+        border-left: 3px solid #2ec4a6;
+        border-radius: 8px;
+        padding: 0.55rem 0.8rem;
+        background: rgba(46, 196, 166, 0.06);
+    }
+    .pipe-title {
+        font-weight: 720;
+        font-size: 0.94rem;
+        line-height: 1.2;
+    }
+    .pipe-sub {
+        opacity: 0.72;
+        font-size: 0.82rem;
+        margin-top: 0.12rem;
+        line-height: 1.35;
+    }
+    .pipe-path {
+        display: inline-block;
+        margin-top: 0.4rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.72rem;
+        opacity: 0.9;
+        background: rgba(46, 196, 166, 0.13);
+        border-radius: 5px;
+        padding: 0.1rem 0.42rem;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -1055,25 +1117,24 @@ def render_validation_section(state, update_status: dict[str, object] | None) ->
             st.warning(f"Ultima consulta FIFA fallida: {update_status.get('attempted_at')}")
 
 
-DATA_PIPELINE_DOT = r"""
-digraph flujo {
-  rankdir=TB;
-  bgcolor="transparent";
-  node [shape=box, style="rounded,filled", fontname="Helvetica",
-        fontsize=10, color="#2ec4a6", fillcolor="#2ec4a6",
-        fontcolor="#0b141a", margin="0.18,0.10"];
-  edge [color="#8894a0", penwidth=1.4, arrowsize=0.7];
+PIPELINE_STAGES = [
+    ("📥", "Datos crudos", "Kaggle · FIFA API v3 · Polymarket", "data/raw/*"),
+    ("🧱", "Dataset", "Tabla de partidos + secuencias temporales", "data/processed/"),
+    ("🧠", "Backbone DL", "MLP · LSTM · GRU multitarea", "selected_model.keras"),
+    ("📊", "Capa bayesiana", "Calibración + Dixon–Coles (posteriores)", "artifact_manifest v2"),
+    ("⚽", "Dashboard", "Simulación Monte Carlo e intervalos", "Streamlit · simulador"),
+]
 
-  raw    [label="data/raw/*\nKaggle · FIFA API v3 · Polymarket"];
-  proc   [label="data/processed\nmatches.parquet + sequences.npz"];
-  model  [label="artifacts/selected_model.keras\nbackbone DL (MLP · LSTM · GRU)"];
-  stat   [label="posteriores bayesianos\ncalibración + Dixon–Coles"];
-  bundle [label="inference_bundle.joblib\nartifact_manifest v2"];
-  app    [label="Streamlit · simulador\nMonte Carlo", fillcolor="#1f6f5c", fontcolor="white"];
 
-  raw -> proc -> model -> stat -> bundle -> app;
-}
-"""
+def _pipeline_html() -> str:
+    steps = "".join(
+        f'<div class="pipe-step"><div class="pipe-badge">{icon}</div>'
+        f'<div class="pipe-card"><div class="pipe-title">{title}</div>'
+        f'<div class="pipe-sub">{sub}</div>'
+        f'<code class="pipe-path">{path}</code></div></div>'
+        for icon, title, sub, path in PIPELINE_STAGES
+    )
+    return f'<div class="pipe">{steps}</div>'
 
 
 def render_data_section() -> None:
@@ -1135,7 +1196,7 @@ def render_data_section() -> None:
     left, right = st.columns([1, 1])
     with left:
         st.subheader("Flujo de datos")
-        st.graphviz_chart(DATA_PIPELINE_DOT, width="stretch")
+        st.markdown(_pipeline_html(), unsafe_allow_html=True)
         st.caption("Del dato crudo al simulador: cada etapa versiona su artefacto.")
     with right:
         st.subheader("Transformacion")
