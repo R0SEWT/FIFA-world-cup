@@ -5,53 +5,61 @@
 El proyecto evolucionó a un predictor híbrido: MLP/LSTM/GRU siguen siendo el backbone exigido por la rúbrica y una capa estadística añade calibración bayesiana, distribución Dixon–Coles de marcadores e incertidumbre posterior para Monte Carlo.
 
 - Rama: `main`.
-- Último commit: `f9a365d` (`Add Handoff document for World Cup 2026 prediction system`), publicado en `origin/main`.
+- Último commit: `ce7d835`, publicado en el fork desplegable `fork/main` (`R0SEWT/FIFA-world-cup`); no hay permiso de escritura en `origin` (`nakato156/FIFA-world-cup`).
 - Estado verificado el 04-07-2026; el árbol estaba limpio antes de esta actualización del handoff.
-- Python 3.13, TensorFlow 2.21 y PyMC 6.0.1.
-- Tests: `16 passed`.
+- Despliegue y cambios de UX/rendimiento verificados el 08-07-2026 sobre la app en ejecución (caché de simulación, cap de corridas, diagrama de flujo, barras de error, disclaimer y spinner dinámico); ver la sección **Despliegue**.
+- Python 3.12 o 3.13 gestionado con `uv`; TensorFlow 2.21 y PyMC 6.0.1 quedan en el extra `notebook`.
+- Tests: `47 passed`.
 - Dashboard: verificado mediante `streamlit.testing`; cero excepciones.
 - Pipeline final: ejecutado de extremo a extremo; genera artefactos v2 con corte `2026-06-27`.
 - Auditoría NUTS real: `R-hat máximo = 1.0`, `ESS bulk mínimo = 1408`, 4 cadenas.
 - Entrenamiento final de 50,000 iteraciones: **completado**; el modelo seleccionado es `mlp_sgd` y la versión de producción se entrenó durante 19 épocas.
-- El notebook editable está actualizado; `Proyecto_Mundial_2026_Ejecutado.ipynb` es anterior a los artefactos finales y todavía debe regenerarse.
+- El notebook editable usa `uv`; `Proyecto_Mundial_2026_Ejecutado.ipynb` requiere regenerarse cuando exista `data/raw/manifest.json`.
 
 ## 2. Comandos de reproducción
 
 Instalación y datos:
 
 ```bash
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-python scripts/download_data.py
-python scripts/build_dataset.py
+uv sync --extra notebook --extra data --extra dev
+uv run --extra data python scripts/download_data.py
+uv run python scripts/build_dataset.py
 ```
 
 Entrenamiento final —50,000 pasos ADVI, 64 muestras posteriores y auditoría NUTS completa—:
 
 ```bash
-python scripts/train_models.py
+uv run --extra notebook python scripts/train_models.py
 ```
 
 La forma explícita equivalente es:
 
 ```bash
-python scripts/train_models.py --bayes-steps 50000
+uv run --extra notebook python scripts/train_models.py --bayes-steps 50000
 ```
 
 Prueba de integración rápida —2 épocas, 200 pasos ADVI y sin NUTS—:
 
 ```bash
-python scripts/train_models.py --quick
+uv run --extra notebook python scripts/train_models.py --quick
 ```
 
 Reconstrucción histórica sin usar partidos posteriores al corte:
 
 ```bash
-python scripts/build_dataset.py --as-of-date YYYY-MM-DD
+uv run python scripts/build_dataset.py --as-of-date YYYY-MM-DD
 ```
 
 La credencial Kaggle se lee desde `KAGGLE_API_TOKEN` en `.env`. Datos, credenciales y artefactos continúan ignorados por Git; en una copia nueva deben regenerarse.
+
+## Despliegue
+
+El dashboard se sirve en Streamlit Community Cloud desde el fork `R0SEWT/FIFA-world-cup` (remoto `fork`). No hay permiso de escritura en `origin` (`nakato156/FIFA-world-cup`), así que para redesplegar basta con `git push fork main` y Streamlit Cloud reconstruye la app.
+
+- **Dependencias.** Streamlit Cloud prioriza `uv.lock` sobre `requirements.txt`, por lo que `tensorflow==2.21.0` (wheel CPU) es dependencia base en `pyproject.toml`; el extra `gpu` añade `and-cuda` solo para local. `requirements.txt` queda como manifiesto mínimo de respaldo.
+- **Artefactos.** `.gitignore` ignora `artifacts/*` salvo los ocho ficheros de runtime v2 (~1.4 MB) que el dashboard necesita para salir del modo demostración; `data/` y los backups de estado siguen fuera de Git.
+- **Corridas.** El slider se capa a 2,000 en el despliegue por los límites del tier gratis; `MUNDIAL_UNLOCK_HEAVY_RUNS=1` reexpone 10,000/20,000 en local.
+- **Config.** `.streamlit/config.toml` (headless, sin telemetría) sí se versiona.
 
 ## 3. Arquitectura actual
 
@@ -61,7 +69,7 @@ La credencial Kaggle se lee desde `KAGGLE_API_TOKEN` en `.env`. Datos, credencia
 - `src/mundial/training.py`: tres folds expansivos, selección por log-loss, test bloqueado, gate de calibración y reentrenamiento de producción.
 - `src/mundial/inference.py`: artefactos v2, H2H real, simetría A/B y matrices de marcador 13×13.
 - `src/mundial/simulation.py`: muestreo directo de marcadores, muestra posterior común por torneo, prórroga, penaltis e intervalos Monte Carlo.
-- `app.py`: predictor, grupos, bracket y campeones con opciones de 100 a 20,000 simulaciones e IC 95%.
+- `app.py`: predictor, grupos, bracket y campeones. La simulación Monte Carlo se cachea con `@st.cache_data` (clave: grupos, overrides, corridas, semilla y versión del estado) para no recomputar en cada rerun; el slider ofrece de 100 a 2,000 corridas (10,000/20,000 solo con `MUNDIAL_UNLOCK_HEAVY_RUNS=1`). Campeones muestra el IC 95% como barras de error sobre el gráfico; el Predictor lleva un disclaimer de lectura y la pestaña Datos un diagrama de flujo del pipeline en Graphviz.
 
 Distribución final por partido:
 
@@ -152,7 +160,7 @@ La calibración candidata empeoró log-loss (1.0088 frente a 1.0048), Brier (0.5
 3. **Tamaño del test.** Mundial 2022 contiene solo 64 partidos; diferencias pequeñas necesitan bootstrap o intervalos para interpretarse.
 4. **Ranking reciente.** Debe comprobarse que las 48 selecciones tengan el snapshot FIFA más reciente disponible.
 5. **Plantillas.** FC 24 sigue siendo proxy; no se usan convocatorias oficiales 2026.
-6. **Rendimiento.** La incertidumbre posterior aumenta el tiempo del simulador. Se verificó funcionalidad con 2,000 corridas, pero falta un benchmark y posible vectorización antes de usar 10,000/20,000 de forma interactiva.
+6. **Rendimiento.** La incertidumbre posterior aumenta el tiempo del simulador. La caché de `@st.cache_data` evita recomputar en cada interacción y el slider desplegado se capa a 2,000 corridas, pero falta un benchmark y posible vectorización antes de usar 10,000/20,000 de forma interactiva (reservadas a local vía `MUNDIAL_UNLOCK_HEAVY_RUNS`).
 7. **Cobertura de selecciones.** Aún conviene añadir una prueba de integración que exija ranking, plantilla y secuencia propios para las 48 selecciones.
 8. **Promoción de Polymarket.** El cliente y los snapshots funcionan contra Gamma/CLOB reales, pero el peso permanece en cero hasta exportar al menos 30 predicciones OOF temporales para calibración y 20 para evaluación. El gate bloquea deliberadamente el predictor de producción sobre partidos que pudo haber visto.
 
